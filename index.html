@@ -489,11 +489,32 @@ function renderProductos(){
 
     const esCRRL = String(p.id||"").toUpperCase().startsWith("CRRL-");
 
-    const cantidad = esCRRL
-      ? `${fmt0(p.cantidad||0)} unidades`
-      : `${fmt(p.m2Solicitados||0)} m²`;
+    let cantidadHTML="";
 
-    const precioUnitario = Number(p.precioM2||0);
+    if(esCRRL){
+
+      cantidadHTML=`
+        <strong>${fmt0(p.cantidad||0)} unidades</strong>
+      `;
+
+    }else{
+
+      const m2Solicitados=Number(p.m2Solicitados||0);
+      const m2Calculados=Number(p.m2Reales||0);
+      const m2Zocalo=p.conZocalo
+        ? Math.max(0,m2Calculados-m2Solicitados)
+        : 0;
+
+      cantidadHTML=`
+        <strong>${fmt(m2Solicitados)} m²</strong>
+        ${p.conZocalo && m2Zocalo>0
+          ? `<br><small>+ ${fmt(m2Zocalo)} m² zócalo</small>`
+          : ""
+        }
+      `;
+    }
+
+    const precioUnitario=Number(p.precioM2||0);
 
     const tr=document.createElement("tr");
 
@@ -502,12 +523,15 @@ function renderProductos(){
         <strong>${esc(p.producto)}</strong>
         ${p.color ? `<br><small>${esc(p.color)}</small>` : ""}
         ${p.tieneOferta ? ' <span class="badge">OFERTA</span>' : ""}
-        ${p.conZocalo ? ' <span class="badge">ZÓCALO</span>' : ""}
+        ${p.conZocalo
+          ? ' <span class="badge">INCLUIDO ZÓCALO</span>'
+          : ""
+        }
       </td>
 
       <td>${esc(p.medida||"—")}</td>
 
-      <td>${cantidad}</td>
+      <td>${cantidadHTML}</td>
 
       <td>${esCRRL ? "—" : p.cajas}</td>
 
@@ -517,7 +541,8 @@ function renderProductos(){
 
       <td>
         <button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button>
-      </td>`;
+      </td>
+    `;
 
     $("rows").appendChild(tr);
   });
@@ -526,7 +551,7 @@ function renderProductos(){
   $("empty").hidden=productos.length>0;
   $("table").hidden=productos.length===0;
 }
-
+  
 $("cantidad")?.addEventListener("input",calcularActual);
 
 $("app").addEventListener("click",e=>{
