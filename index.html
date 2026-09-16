@@ -434,7 +434,36 @@ $("cantidad")?.addEventListener("input",calcularActual);
 
 $("app").addEventListener("click",e=>{
   const btn=e.target.closest("[data-remove]");
-  if(btn){productos.splice(Number(btn.dataset.remove),1);renderProductos()}
+  if(btn){
+    productos.splice(Number(btn.dataset.remove),1);
+    renderProductos();
+    return;
+  }
+
+  if(e.target.id==="confirm"){
+    const c=calcularActual();
+
+    if(!c){
+      return alert(
+        esMaterialCorralon(productoActual)
+          ? "Ingresá la cantidad de unidades."
+          : "Ingresá los metros cuadrados."
+      );
+    }
+
+    const p=productoActual;
+
+    productos.push({
+      id:p["ID"],
+      producto:p["Producto"],
+      medida:p["Medida"] || "",
+      color:p["Color"] || "",
+      ...c
+    });
+
+    cerrarModal();
+    renderProductos();
+  }
 });
 
 async function guardarPresupuesto(){
