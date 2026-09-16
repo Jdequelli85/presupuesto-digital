@@ -287,31 +287,66 @@ function limpiarFormulario(){
 
 async function abrirModal(){
   $("modal").classList.add("open");
-  $("scanArea").hidden=false;$("calcArea").hidden=true;
-  $("scanError").className="status";$("scanError").textContent="";
+  $("scanArea").hidden=false;
+  $("calcArea").hidden=true;
+  $("scanError").className="status";
+  $("scanError").textContent="";
+
+  if(scanner){
+    try{await scanner.stop();}catch(e){}
+    try{await scanner.clear();}catch(e){}
+    scanner=null;
+  }
+
   try{
-    scanner = new Html5Qrcode("reader");
-    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:250}},onScan);
+    scanner = new Html5Qrcode("reader", {verbose:false});
+    const config = {
+      fps:10,
+      qrbox:(viewfinderWidth,viewfinderHeight)=>{
+        const size=Math.floor(Math.min(viewfinderWidth,viewfinderHeight)*0.72);
+        return {width:size,height:size};
+      },
+      aspectRatio:1.0
+    };
+
+    await scanner.start(
+      {facingMode:"environment"},
+      config,
+      onScan,
+      ()=>{}
+    );
+
+    $("scanError").className="status ok";
+    $("scanError").textContent="Apuntá la cámara al código QR.";
   }catch(e){
     $("scanError").className="status error";
     $("scanError").textContent="No se pudo abrir la cámara. Verificá el permiso del navegador.";
+    try{if(scanner)await scanner.clear();}catch(x){}
+    scanner=null;
   }
 }
-
 async function cerrarModal(){
   if(scanner){
     try{await scanner.stop();}catch(e){}
-    try{scanner.clear();}catch(e){}
+    try{await scanner.clear();}catch(e){}
     scanner=null;
   }
   $("modal")?.classList.remove("open");
 }
-
 async function onScan(text){
-  if(scanner){try{await scanner.stop();}catch(e){}}
+  if(!scanner)return;
+
   const id=extraerId(text);
   if(!id)return;
+
+  try{await scanner.stop();}catch(e){}
+  try{await scanner.clear();}catch(e){}
+  scanner=null;
+
   $("scanArea").hidden=true;
+  $("scanError").className="status";
+  $("scanError").textContent="Cargando producto...";
+
   try{
     const r=await jsonp({accion:"producto",id});
     if(!r?.ok)throw new Error(r?.error||"Producto no encontrado.");
@@ -321,10 +356,8 @@ async function onScan(text){
     $("scanArea").hidden=false;
     $("scanError").className="status error";
     $("scanError").textContent=e.message;
-    setTimeout(()=>abrirModal(),300);
   }
 }
-
 function extraerId(text){
   const t=String(text||"").trim();
   const m=t.match(/[?&]id=([^&]+)/i);
