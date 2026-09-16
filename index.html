@@ -377,39 +377,21 @@ function mostrarProducto(){
       : (tieneOferta?oferta:precioContado);
 
   /* =========================
-     MATERIALES CRRL
+     MATERIAL DE CORRALÓN
      ========================= */
   if(crrl){
-
     $("productInfo").innerHTML=`
       <strong>${esc(p["Producto"])}</strong><br>
-      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>
-    `;
+      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>`;
 
-    $("calcArea").innerHTML=`
-      <div id="productInfo" class="product-info"></div>
-
-      <label>Cantidad *</label>
-      <input id="cantidad" type="number" min="1" step="1" placeholder="Ej.: 10">
-
-      <div id="calcInfo" class="calc-info"></div>
-
-      <button class="btn btn-primary btn-large" id="confirm">
-        AGREGAR AL PRESUPUESTO
-      </button>
-    `;
-
-    $("productInfo").innerHTML=`
-      <strong>${esc(p["Producto"])}</strong><br>
-      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>
-    `;
+    $("m2Area").hidden=true;
+    $("cantidadArea").hidden=false;
 
     $("cantidad").value="";
     $("calcInfo").textContent="";
     $("calcArea").hidden=false;
 
-    $("cantidad").oninput=calcularActual;
-
+    $("cantidad").focus();
     return;
   }
 
@@ -429,6 +411,7 @@ function mostrarProducto(){
 
   if(colores.length>1){
     selectorColor=`
+      <br>
       <label>Color *</label>
       <select id="colorSelect">
         <option value="">Seleccioná un color</option>
@@ -443,11 +426,12 @@ function mostrarProducto(){
     <strong>${esc(p["Producto"])}</strong><br>
     ${esc(p["Medida"]||"")}
     ${selectorColor}
-
     <br>
     <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /m²</strong><br>
-    Caja: ${fmt(p["Caja m²"])} m² · ${fmt0(p["Kg/Caja"]||0)} kg/caja
-  `;
+    Caja: ${fmt(p["Caja m²"])} m² · ${fmt0(p["Kg/Caja"]||0)} kg/caja`;
+
+  $("m2Area").hidden=false;
+  $("cantidadArea").hidden=true;
 
   $("m2").value="";
   $("zocalo").checked=false;
