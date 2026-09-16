@@ -140,6 +140,7 @@ let vendedor = sessionStorage.getItem("gt_usuario") || "";
 let productos = [];
 let productoActual = null;
 let scanner = null;
+let scanProcesando = false;
 let verNumero = new URLSearchParams(location.search).get("ver") || "";
 
 const $ = id => document.getElementById(id);
@@ -158,6 +159,37 @@ function categoriaProducto(p){
 }
 
 function esMaterialCorralon(p){ return categoriaProducto(p)==="CRRL"; }
+
+function sonidoQR(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx)return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.value = 880;
+
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.13);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.14);
+    osc.onended = () => ctx.close();
+  }catch(e){}
+}
+
+function nuevoPresupuesto(){
+  productos = [];
+  productoActual = null;
+  verNumero = "";
+  renderApp();
+}
 
 function jsonp(params){
   return new Promise((resolve,reject)=>{
@@ -315,6 +347,7 @@ function limpiarFormulario(){
 }
 
 async function abrirModal(){
+  scanProcesando = false;
   $("modal").classList.add("open");
   $("scanArea").hidden=false;$("calcArea").hidden=true;
   $("scanError").className="status";$("scanError").textContent="";
@@ -328,6 +361,7 @@ async function abrirModal(){
 }
 
 async function cerrarModal(){
+  scanProcesando = false;
   if(scanner){
     try{await scanner.stop();}catch(e){}
     try{scanner.clear();}catch(e){}
@@ -337,19 +371,29 @@ async function cerrarModal(){
 }
 
 async function onScan(text){
-  if(scanner){try{await scanner.stop();}catch(e){}}
+  if(scanProcesando)return;
+
   const id=extraerId(text);
   if(!id)return;
+
+  scanProcesando = true;
+
+  if(scanner){try{await scanner.stop();}catch(e){}}
   $("scanArea").hidden=true;
+
   try{
     const r=await jsonp({accion:"producto",id});
     if(!r?.ok)throw new Error(r?.error||"Producto no encontrado.");
+
+    sonidoQR();
+
     productoActual=r.producto;
     mostrarProducto();
   }catch(e){
     $("scanArea").hidden=false;
     $("scanError").className="status error";
     $("scanError").textContent=e.message;
+    scanProcesando = false;
     setTimeout(()=>abrirModal(),300);
   }
 }
@@ -624,7 +668,7 @@ function mostrarPresupuestoGuardado(numero,datos){
     ${quoteHtml(numero,fecha,datos)}
   </main>`;
   $("printQuote").onclick=()=>window.print();
-  $("newQuote").onclick=()=>renderApp();
+  $("newQuote").onclick=nuevoPresupuesto;
 }
 
 function quoteHtml(numero,fecha,d){
@@ -668,7 +712,7 @@ async function cargarHistorico(numero){
     const datos={cliente:p["Cliente"]||"",dniCuit:p["DNI/CUIT"]||"",telefono:p["Teléfono"]||"",email:p["Email"]||"",direccion:p["Dirección"]||"",formaPago:p["Forma de pago"]||"",total:Number(p["Total"]||0),productos:productosHistoricos};
     const fecha=p["Fecha"]?new Date(p["Fecha"]).toLocaleDateString("es-AR"):new Date().toLocaleDateString("es-AR");
     $("app").innerHTML=header()+`<main class="wrap"><div class="historical-actions no-print"><button class="btn btn-primary" id="printQuote">🖨 IMPRIMIR / GUARDAR PDF</button><button class="btn btn-secondary" id="newQuote">NUEVO PRESUPUESTO</button></div>${quoteHtml(numero,fecha,datos)}</main>`;
-    $("printQuote").onclick=()=>window.print();$("newQuote").onclick=()=>{verNumero="";renderApp()};
+    $("printQuote").onclick=()=>window.print();$("newQuote").onclick=nuevoPresupuesto;
   }catch(e){
     $("app").innerHTML=header()+`<main class="wrap"><section class="card"><div class="status error" style="display:block">${esc(e.message)}</div><div class="actions no-print"><button class="btn btn-secondary" id="back">VOLVER</button></div></section></main>`;
     $("back").onclick=()=>{verNumero="";renderApp()};
