@@ -98,7 +98,7 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 .quote-total{text-align:right;font-size:21px;font-weight:800;margin-top:18px}
 .quote-foot{margin-top:28px;padding-top:12px;border-top:1px solid #ddd;font-size:12px;color:#666;line-height:1.5}
 .historical-actions{display:flex;gap:10px;margin-bottom:15px}
-.badge{display:inline-block;font-size:11px;padding:4px 7px;border-radius:10px;background:#eee;color:#555}
+.badge{display:inline-block;font-size:11px;padding:4px 7px;border-radius:10px;background:#eee;color:#555}.badge-zocalo{background:#e5e7eb;color:#555}
 @media(max-width:800px){
   .grid{grid-template-columns:1fr 1fr}
 }
@@ -132,7 +132,7 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycby_3DebaIbZZW2qZ7ShkePBD40Bzo8wGyaHAw8w0omsKahF6CpuUEEPaG2ox3fGkAqk0w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzhfaLJ2F-Rs0e50nMBNCYIToZ-RysALfsDVy4CamKoNRE_OBL1b18QLsFsYA50pJr5kQ/exec";
 const LOGO_URL = "https://raw.githubusercontent.com/Jdequelli85/qr-corralon/main/logo.png";
 
 let token = sessionStorage.getItem("gt_token") || "";
@@ -146,6 +146,18 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const fmt = n => Number(n || 0).toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmt0 = n => Number(n || 0).toLocaleString("es-AR",{maximumFractionDigits:0});
+
+function categoriaProducto(p){
+  const id=String(p?.["ID"]||"").trim().toUpperCase();
+  if(id.startsWith("CRRL-")) return "CRRL";
+  if(id.startsWith("CER-")) return "CER";
+  if(id.startsWith("POR-")) return "POR";
+  if(id.startsWith("REV-")) return "REV";
+  if(id.startsWith("PSO-")) return "PSO";
+  return "OTRO";
+}
+
+function esMaterialCorralon(p){ return categoriaProducto(p)==="CRRL"; }
 
 function jsonp(params){
   return new Promise((resolve,reject)=>{
@@ -263,9 +275,15 @@ function renderApp(){
       </div>
       <div id="calcArea" hidden>
         <div id="productInfo" class="product-info"></div>
-        <label>Metros cuadrados necesarios *</label>
-        <input id="m2" type="number" min="0.01" step="0.01" placeholder="Ej.: 28">
-        <label class="checkbox"><input id="zocalo" type="checkbox"> Con zócalo (+10%)</label>
+        <div id="m2Area">
+          <label>Metros cuadrados necesarios *</label>
+          <input id="m2" type="number" min="0.01" step="0.01" placeholder="Ej.: 28">
+          <label class="checkbox"><input id="zocalo" type="checkbox"> Con zócalo (+10%)</label>
+        </div>
+        <div id="cantidadArea" hidden>
+          <label>Cantidad *</label>
+          <input id="cantidad" type="number" min="1" step="1" placeholder="Ej.: 10">
+        </div>
         <div id="calcInfo" class="calc-info"></div>
         <button class="btn btn-primary btn-large" id="confirm">AGREGAR AL PRESUPUESTO</button>
       </div>
@@ -277,6 +295,7 @@ function renderApp(){
   $("generate").onclick=guardarPresupuesto;
   $("m2").oninput=calcularActual;
   $("zocalo").onchange=calcularActual;
+  $("cantidad").oninput=calcularActual;
   renderProductos();
 }
 
@@ -287,66 +306,31 @@ function limpiarFormulario(){
 
 async function abrirModal(){
   $("modal").classList.add("open");
-  $("scanArea").hidden=false;
-  $("calcArea").hidden=true;
-  $("scanError").className="status";
-  $("scanError").textContent="";
-
-  if(scanner){
-    try{await scanner.stop();}catch(e){}
-    try{await scanner.clear();}catch(e){}
-    scanner=null;
-  }
-
+  $("scanArea").hidden=false;$("calcArea").hidden=true;
+  $("scanError").className="status";$("scanError").textContent="";
   try{
-    scanner = new Html5Qrcode("reader", {verbose:false});
-    const config = {
-      fps:10,
-      qrbox:(viewfinderWidth,viewfinderHeight)=>{
-        const size=Math.floor(Math.min(viewfinderWidth,viewfinderHeight)*0.72);
-        return {width:size,height:size};
-      },
-      aspectRatio:1.0
-    };
-
-    await scanner.start(
-      {facingMode:"environment"},
-      config,
-      onScan,
-      ()=>{}
-    );
-
-    $("scanError").className="status ok";
-    $("scanError").textContent="Apuntá la cámara al código QR.";
+    scanner = new Html5Qrcode("reader");
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:250}},onScan);
   }catch(e){
     $("scanError").className="status error";
     $("scanError").textContent="No se pudo abrir la cámara. Verificá el permiso del navegador.";
-    try{if(scanner)await scanner.clear();}catch(x){}
-    scanner=null;
   }
 }
+
 async function cerrarModal(){
   if(scanner){
     try{await scanner.stop();}catch(e){}
-    try{await scanner.clear();}catch(e){}
+    try{scanner.clear();}catch(e){}
     scanner=null;
   }
   $("modal")?.classList.remove("open");
 }
-async function onScan(text){
-  if(!scanner)return;
 
+async function onScan(text){
+  if(scanner){try{await scanner.stop();}catch(e){}}
   const id=extraerId(text);
   if(!id)return;
-
-  try{await scanner.stop();}catch(e){}
-  try{await scanner.clear();}catch(e){}
-  scanner=null;
-
   $("scanArea").hidden=true;
-  $("scanError").className="status";
-  $("scanError").textContent="Cargando producto...";
-
   try{
     const r=await jsonp({accion:"producto",id});
     if(!r?.ok)throw new Error(r?.error||"Producto no encontrado.");
@@ -356,8 +340,10 @@ async function onScan(text){
     $("scanArea").hidden=false;
     $("scanError").className="status error";
     $("scanError").textContent=e.message;
+    setTimeout(()=>abrirModal(),300);
   }
 }
+
 function extraerId(text){
   const t=String(text||"").trim();
   const m=t.match(/[?&]id=([^&]+)/i);
@@ -366,38 +352,59 @@ function extraerId(text){
 
 function mostrarProducto(){
   const p=productoActual;
+  const crrl=esMaterialCorralon(p);
   const oferta=Number(p["OFERTA"]||0);
   const tieneOferta=Number.isFinite(oferta)&&oferta>0;
   const precioContado=Number(p["Precio Contado"]||0);
   const precioTarjeta=Number(p["Precio Tarjeta"]||0);
   const forma=$("forma")?.value||"Contado";
   const precio=forma==="Tarjeta"&&precioTarjeta>0?precioTarjeta:(tieneOferta?oferta:precioContado);
+
+  if(crrl){
+    $("productInfo").innerHTML=`<strong>${esc(p["Producto"])}</strong><br>
+      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>`;
+    $("m2Area").hidden=true;
+    $("cantidadArea").hidden=false;
+    $("cantidad").value="";
+    $("calcInfo").textContent="";
+    $("calcArea").hidden=false;
+    $("cantidad").focus();
+    return;
+  }
+
   $("productInfo").innerHTML=`<strong>${esc(p["Producto"])}</strong><br>${esc(p["Medida"])} · ${esc(p["Color"])}<br>
     <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /m²</strong><br>
     Caja: ${fmt(p["Caja m²"])} m² · ${fmt0(p["Kg/Caja"]||0)} kg/caja`;
+  $("m2Area").hidden=false;
+  $("cantidadArea").hidden=true;
   $("m2").value="";$("zocalo").checked=false;$("calcInfo").textContent="";$("calcArea").hidden=false;
   $("m2").focus();calcularActual();
 }
-
 function calcularActual(){
   if(!productoActual)return null;
+  const crrl=esMaterialCorralon(productoActual);
+  const oferta=Number(productoActual["OFERTA"]||0);
+  const tieneOferta=Number.isFinite(oferta)&&oferta>0;
+  const forma=$("forma").value||"Contado";
+  const precioTarjeta=Number(productoActual["Precio Tarjeta"]||0);
+  const precio=(forma==="Tarjeta"&&precioTarjeta>0)?precioTarjeta:(tieneOferta?oferta:Number(productoActual["Precio Contado"]||0));
+
+  if(crrl){
+    const cantidad=Number($("cantidad")?.value||0);
+    if(cantidad<=0){$("calcInfo").textContent="";return null}
+    const subtotal=cantidad*precio;
+    $("calcInfo").textContent=`${cantidad} unidades · Subtotal: $ ${fmt(subtotal)}`;
+    return {unidad:"Unidades",cantidad, m2Solicitados:0,conZocalo:false,porcentajeAdicional:0,m2Calculados:0,cajas:0,m2Reales:0,precioM2:precio,precioCaja:precio,subtotal,tieneOferta,oferta};
+  }
+
   const m2=Number($("m2").value||0);if(m2<=0){$("calcInfo").textContent="";return null}
   const conZ=$("zocalo").checked, extra=conZ?10:0, m2Calc=m2*(1+extra/100);
   const caja=Number(productoActual["Caja m²"]||0);
   const cajas=Math.ceil(m2Calc/caja), reales=cajas*caja;
-  const oferta=Number(productoActual["OFERTA"]||0), tieneOferta=Number.isFinite(oferta)&&oferta>0;
-  const forma=$("forma").value||"Contado";
-  const precioTarjeta=Number(productoActual["Precio Tarjeta"]||0);
-  const precio=(forma==="Tarjeta"&&precioTarjeta>0)?precioTarjeta:(tieneOferta?oferta:Number(productoActual["Precio Contado"]||0));
   const subtotal=reales*precio;
   $("calcInfo").textContent=`${conZ?"Con zócalo (+10%) · ":""}${cajas} cajas · ${fmt(reales)} m² reales · Subtotal: $ ${fmt(subtotal)}`;
-  return {m2Solicitados:m2,conZocalo:conZ,porcentajeAdicional:extra,m2Calculados:m2Calc,cajas,m2Reales:reales,precioM2:precio,precioCaja:precio*caja,subtotal,tieneOferta,oferta};
+  return {unidad:"m²",cantidad:m2,m2Solicitados:m2,conZocalo:conZ,porcentajeAdicional:extra,m2Calculados:m2Calc,cajas,m2Reales:reales,precioM2:precio,precioCaja:precio*caja,subtotal,tieneOferta,oferta};
 }
-
-$("app").addEventListener("click",e=>{
-  const btn=e.target.closest("[data-remove]");
-  if(btn){productos.splice(Number(btn.dataset.remove),1);renderProductos()}
-});
 
 function renderProductos(){
   if(!$("rows"))return;
@@ -405,11 +412,17 @@ function renderProductos(){
   let total=0;
   productos.forEach((p,i)=>{
     total+=Number(p.subtotal||0);
+    const cr=String(p.unidad||"")==="Unidades";
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td><strong>${esc(p.producto)}</strong><br><small>${esc(p.color)}</small>${p.tieneOferta?' <span class="badge">OFERTA</span>':''}${p.conZocalo?' <span class="badge">ZÓCALO</span>':''}</td>
-      <td>${esc(p.medida)}</td><td>${fmt(p.m2Solicitados)}</td><td>${p.cajas}</td>
-      <td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td>
-      <td><button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button></td>`;
+    tr.innerHTML=cr
+      ? `<td><strong>${esc(p.producto)}</strong>${p.tieneOferta?' <span class="badge">OFERTA</span>':''}</td>
+         <td>—</td><td>${fmt0(p.cantidad||0)} unidades</td><td>—</td>
+         <td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td>
+         <td><button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button></td>`
+      : `<td><strong>${esc(p.producto)}</strong><br><small>${esc(p.color)}</small>${p.tieneOferta?' <span class="badge">OFERTA</span>':''}${p.conZocalo?' <span class="badge badge-zocalo">Incl. Zócalo</span>':''}</td>
+         <td>${esc(p.medida)}</td><td>${fmt(p.m2Solicitados)}</td><td>${p.cajas}</td>
+         <td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td>
+         <td><button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button></td>`;
     $("rows").appendChild(tr);
   });
   $("total").textContent=fmt(total);
@@ -417,17 +430,11 @@ function renderProductos(){
   $("table").hidden=productos.length===0;
 }
 
+$("cantidad")?.addEventListener("input",calcularActual);
+
 $("app").addEventListener("click",e=>{
-  if(e.target.id==="confirm"){
-    const c=calcularActual();
-    if(!c)return alert("Ingresá los metros cuadrados.");
-    const p=productoActual;
-    productos.push({
-      id:p["ID"],producto:p["Producto"],medida:p["Medida"],color:p["Color"],
-      ...c
-    });
-    cerrarModal();renderProductos();
-  }
+  const btn=e.target.closest("[data-remove]");
+  if(btn){productos.splice(Number(btn.dataset.remove),1);renderProductos()}
 });
 
 async function guardarPresupuesto(){
@@ -468,11 +475,12 @@ function mostrarPresupuestoGuardado(numero,datos){
 }
 
 function quoteHtml(numero,fecha,d){
-  const rows=d.productos.map(p=>`<tr>
-    <td>${esc(p.producto)}<br><small>${esc(p.color)}</small></td>
-    <td>${esc(p.medida)}</td><td>${fmt(p.m2Solicitados)}</td><td>${p.cajas}</td>
-    <td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td>
-  </tr>`).join("");
+  const rows=d.productos.map(p=>{
+    const cr=String(p.unidad||"")==="Unidades";
+    return cr
+      ? `<tr><td>${esc(p.producto)}${p.tieneOferta?' <small>OFERTA</small>':''}</td><td>—</td><td>${fmt0(p.cantidad||0)} unidades</td><td>—</td><td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td></tr>`
+      : `<tr><td>${esc(p.producto)}<br><small>${esc(p.color)}${p.conZocalo?' · Incl. Zócalo':''}</small></td><td>${esc(p.medida)}</td><td>${fmt(p.m2Solicitados)}</td><td>${p.cajas}</td><td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td></tr>`;
+  }).join("");
   return `<section class="quote-preview" id="quote">
     <div class="quote-head"><img src="${LOGO_URL}" alt="G&T S.R.L."><div><div class="quote-number">${esc(numero)}</div><div class="quote-meta">Fecha: ${esc(fecha)}<br>Vendedor: ${esc(vendedor)}</div></div></div>
     <div class="quote-customer"><strong>Cliente:</strong> ${esc(d.cliente)}<br>
@@ -480,7 +488,7 @@ function quoteHtml(numero,fecha,d){
       ${d.email?`<strong>Email:</strong> ${esc(d.email)}<br>`:""}${d.direccion?`<strong>Dirección:</strong> ${esc(d.direccion)}<br>`:""}
       <strong>Forma de pago:</strong> ${esc(d.formaPago||"Contado")}
     </div>
-    <table class="quote-table"><thead><tr><th>Producto</th><th>Medida</th><th>m²</th><th>Cajas</th><th>Precio/m²</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table>
+    <table class="quote-table"><thead><tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="quote-total">TOTAL: $ ${fmt(d.total)}</div>
     <div class="quote-foot"><strong>Validez:</strong> 15 días. Los precios y condiciones indicados corresponden al momento de emisión del presupuesto.<br>
       G&T S.R.L. · ${esc("Conquistadores del Desierto 3400")} · Neuquén, Argentina · Tel. ${esc("299 520-7382")}
@@ -499,8 +507,10 @@ async function cargarHistorico(numero){
     const p=r.presupuesto;
     const productosHistoricos=(r.productos||[]).map(x=>({
       producto:x["Producto"]||"",color:x["Color"]||"",medida:x["Medida"]||"",
-      m2Solicitados:Number(x["m² Solicitados"]||x["m2 Solicitados"]||0),
-      cajas:Number(x["Cajas"]||0),precioM2:Number(x["Precio/m²"]||0),subtotal:Number(x["Subtotal"]||0)
+      unidad:x["Unidad"]||"",cantidad:Number(x["Cantidad"]||0),
+      m2Solicitados:Number(x["m² solicitados"]||x["m² Solicitados"]||x["m2 Solicitados"]||0),
+      cajas:Number(x["Cajas"]||0),precioM2:Number(x["Precio/m²"]||0),subtotal:Number(x["Subtotal"]||0),
+      conZocalo:String(x["Con zócalo"]||"")==="Sí",tieneOferta:Number(x["Oferta"]||0)>0
     }));
     const datos={cliente:p["Cliente"]||"",dniCuit:p["DNI/CUIT"]||"",telefono:p["Teléfono"]||"",email:p["Email"]||"",direccion:p["Dirección"]||"",formaPago:p["Forma de pago"]||"",total:Number(p["Total"]||0),productos:productosHistoricos};
     const fecha=p["Fecha"]?new Date(p["Fecha"]).toLocaleDateString("es-AR"):new Date().toLocaleDateString("es-AR");
