@@ -252,10 +252,20 @@ function renderApp(){
         <button class="btn btn-primary add-btn" id="add">＋ AGREGAR PRODUCTO</button>
       </div>
       <div id="empty" class="empty">Todavía no se agregaron productos.</div>
-      <div class="table-wrap"><table id="table" hidden>
-        <thead><tr><th>Producto</th><th>Medida</th><th>m² solicitados</th><th>Cajas</th><th>Precio/m²</th><th>Subtotal</th><th></th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table></div>
+<div class="table-wrap"><table id="table" hidden>
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>Medida</th>
+      <th>Cantidad</th>
+      <th>Cajas</th>
+      <th>P. UNIT.</th>
+      <th>Subtotal</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table></div>
       <div class="total-box"><small>Total presupuesto</small>$ <span id="total">0,00</span></div>
       <div class="actions">
         <button class="btn btn-secondary" id="cancel">CANCELAR</button>
@@ -408,23 +418,48 @@ function calcularActual(){
 
 function renderProductos(){
   if(!$("rows"))return;
+
   $("rows").innerHTML="";
   let total=0;
+
   productos.forEach((p,i)=>{
     total+=Number(p.subtotal||0);
-    const cr=String(p.unidad||"")==="Unidades";
+
+    const esCRRL = String(p.id||"").toUpperCase().startsWith("CRRL-");
+
+    const cantidad = esCRRL
+      ? `${fmt0(p.cantidad||0)} unidades`
+      : `${fmt(p.m2Solicitados||0)} m²`;
+
+    const precioUnitario = Number(p.precioM2||0);
+
     const tr=document.createElement("tr");
-    tr.innerHTML=cr
-      ? `<td><strong>${esc(p.producto)}</strong>${p.tieneOferta?' <span class="badge">OFERTA</span>':''}</td>
-         <td>—</td><td>${fmt0(p.cantidad||0)} unidades</td><td>—</td>
-         <td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td>
-         <td><button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button></td>`
-      : `<td><strong>${esc(p.producto)}</strong><br><small>${esc(p.color)}</small>${p.tieneOferta?' <span class="badge">OFERTA</span>':''}${p.conZocalo?' <span class="badge badge-zocalo">Incl. Zócalo</span>':''}</td>
-         <td>${esc(p.medida)}</td><td>${fmt(p.m2Solicitados)}</td><td>${p.cajas}</td>
-         <td class="money">$ ${fmt(p.precioM2)}</td><td class="money">$ ${fmt(p.subtotal)}</td>
-         <td><button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button></td>`;
+
+    tr.innerHTML=`
+      <td>
+        <strong>${esc(p.producto)}</strong>
+        ${p.color ? `<br><small>${esc(p.color)}</small>` : ""}
+        ${p.tieneOferta ? ' <span class="badge">OFERTA</span>' : ""}
+        ${p.conZocalo ? ' <span class="badge">ZÓCALO</span>' : ""}
+      </td>
+
+      <td>${esc(p.medida||"—")}</td>
+
+      <td>${cantidad}</td>
+
+      <td>${esCRRL ? "—" : p.cajas}</td>
+
+      <td class="money">$ ${fmt(precioUnitario)}</td>
+
+      <td class="money">$ ${fmt(p.subtotal)}</td>
+
+      <td>
+        <button class="btn btn-danger" data-remove="${i}" title="Eliminar">🗑</button>
+      </td>`;
+
     $("rows").appendChild(tr);
   });
+
   $("total").textContent=fmt(total);
   $("empty").hidden=productos.length>0;
   $("table").hidden=productos.length===0;
