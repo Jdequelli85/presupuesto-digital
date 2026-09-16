@@ -363,33 +363,111 @@ function extraerId(text){
 function mostrarProducto(){
   const p=productoActual;
   const crrl=esMaterialCorralon(p);
+
   const oferta=Number(p["OFERTA"]||0);
   const tieneOferta=Number.isFinite(oferta)&&oferta>0;
+
   const precioContado=Number(p["Precio Contado"]||0);
   const precioTarjeta=Number(p["Precio Tarjeta"]||0);
   const forma=$("forma")?.value||"Contado";
-  const precio=forma==="Tarjeta"&&precioTarjeta>0?precioTarjeta:(tieneOferta?oferta:precioContado);
 
+  const precio=
+    forma==="Tarjeta"&&precioTarjeta>0
+      ? precioTarjeta
+      : (tieneOferta?oferta:precioContado);
+
+  /* =========================
+     MATERIALES CRRL
+     ========================= */
   if(crrl){
-    $("productInfo").innerHTML=`<strong>${esc(p["Producto"])}</strong><br>
-      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>`;
-    $("m2Area").hidden=true;
-    $("cantidadArea").hidden=false;
+
+    $("productInfo").innerHTML=`
+      <strong>${esc(p["Producto"])}</strong><br>
+      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>
+    `;
+
+    $("calcArea").innerHTML=`
+      <div id="productInfo" class="product-info"></div>
+
+      <label>Cantidad *</label>
+      <input id="cantidad" type="number" min="1" step="1" placeholder="Ej.: 10">
+
+      <div id="calcInfo" class="calc-info"></div>
+
+      <button class="btn btn-primary btn-large" id="confirm">
+        AGREGAR AL PRESUPUESTO
+      </button>
+    `;
+
+    $("productInfo").innerHTML=`
+      <strong>${esc(p["Producto"])}</strong><br>
+      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /unidad</strong>
+    `;
+
     $("cantidad").value="";
     $("calcInfo").textContent="";
     $("calcArea").hidden=false;
-    $("cantidad").focus();
+
+    $("cantidad").oninput=calcularActual;
+
     return;
   }
 
-  $("productInfo").innerHTML=`<strong>${esc(p["Producto"])}</strong><br>${esc(p["Medida"])} · ${esc(p["Color"])}<br>
+  /* =========================
+     CERÁMICOS / PORCELANATOS /
+     REVESTIMIENTOS / PISOS
+     ========================= */
+
+  const coloresRaw=String(p["Color"]||"").trim();
+
+  const colores=coloresRaw
+    .split(/\s*-\s*/)
+    .map(c=>c.trim())
+    .filter(Boolean);
+
+  let selectorColor="";
+
+  if(colores.length>1){
+    selectorColor=`
+      <label>Color *</label>
+      <select id="colorSelect">
+        <option value="">Seleccioná un color</option>
+        ${colores.map(c=>`
+          <option value="${esc(c)}">${esc(c)}</option>
+        `).join("")}
+      </select>
+    `;
+  }
+
+  $("productInfo").innerHTML=`
+    <strong>${esc(p["Producto"])}</strong><br>
+    ${esc(p["Medida"]||"")}
+    ${selectorColor}
+
+    <br>
     <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /m²</strong><br>
-    Caja: ${fmt(p["Caja m²"])} m² · ${fmt0(p["Kg/Caja"]||0)} kg/caja`;
-  $("m2Area").hidden=false;
-  $("cantidadArea").hidden=true;
-  $("m2").value="";$("zocalo").checked=false;$("calcInfo").textContent="";$("calcArea").hidden=false;
-  $("m2").focus();calcularActual();
+    Caja: ${fmt(p["Caja m²"])} m² · ${fmt0(p["Kg/Caja"]||0)} kg/caja
+  `;
+
+  $("m2").value="";
+  $("zocalo").checked=false;
+  $("calcInfo").textContent="";
+  $("calcArea").hidden=false;
+
+  if(colores.length===1){
+    productoActual._colorSeleccionado=colores[0];
+  }else{
+    productoActual._colorSeleccionado="";
+  }
+
+  $("colorSelect")?.addEventListener("change",function(){
+    productoActual._colorSeleccionado=this.value;
+  });
+
+  $("m2").focus();
+  calcularActual();
 }
+  
 function calcularActual(){
   if(!productoActual)return null;
   const crrl=esMaterialCorralon(productoActual);
