@@ -550,13 +550,13 @@ $("app").addEventListener("click",e=>{
 
     const p=productoActual;
 
-    productos.push({
-      id:p["ID"],
-      producto:p["Producto"],
-      medida:p["Medida"] || "",
-      color:p["Color"] || "",
-      ...c
-    });
+productos.push({
+  id:p["ID"],
+  producto:p["Producto"],
+  medida:p["Medida"]||"",
+  color:p._colorSeleccionado || p["Color"] || "",
+  ...c
+});
 
     cerrarModal();
     renderProductos();
