@@ -69,10 +69,6 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 .total-box{text-align:right;margin-top:15px;font-size:22px;font-weight:800}
 .total-box small{display:block;font-size:12px;color:#777;font-weight:400;margin-bottom:3px}
 .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
-.whatsapp-btn{background:#25D366;color:#fff;border:0}
-.whatsapp-btn:hover{background:#1faa52}
-.share-status{margin-top:10px;font-size:13px;color:#666;text-align:center}
-.share-status.error{color:#9d0010}
 .modal-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
   display:none;align-items:center;justify-content:center;padding:15px
@@ -260,7 +256,6 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 <div id="app"></div>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" type="text/javascript"></script>
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby_3DebaIbZZW2qZ7ShkePBD40Bzo8wGyaHAw8w0omsKahF6CpuUEEPaG2ox3fGkAqk0w/exec";
 const LOGO_URL = "https://raw.githubusercontent.com/Jdequelli85/qr-corralon/main/logo.png";
@@ -790,199 +785,15 @@ async function guardarPresupuesto(){
 function mostrarPresupuestoGuardado(numero,datos){
   verNumero="";
   const fecha=new Date().toLocaleDateString("es-AR");
-  const telefonoCliente=String(datos.telefono||"").trim();
-
   $("app").innerHTML=header()+`<main class="wrap">
     <div class="historical-actions no-print">
       <button class="btn btn-primary" id="printQuote">🖨 IMPRIMIR / GUARDAR PDF</button>
-      ${telefonoCliente
-        ? `<button class="btn whatsapp-btn" id="shareWhatsapp">🟢 ENVIAR POR WHATSAPP</button>`
-        : ""}
       <button class="btn btn-secondary" id="newQuote">NUEVO PRESUPUESTO</button>
     </div>
-    <div id="shareStatus" class="share-status no-print"></div>
     ${quoteHtml(numero,fecha,datos)}
   </main>`;
   $("printQuote").onclick=()=>window.print();
   $("newQuote").onclick=nuevoPresupuesto;
-  if(telefonoCliente){
-    $("shareWhatsapp").onclick=async ()=>{
-      const copiado=await copiarTelefonoAlPortapapeles(datos.telefono);
-
-      if(copiado){
-        const st=$("shareStatus");
-        if(st){
-          st.className="share-status";
-          st.textContent="✓ Número del cliente copiado al portapapeles.";
-        }
-      }
-
-      // Continúa exactamente con el flujo actual:
-      // generar PDF → abrir menú compartir → WhatsApp.
-      await compartirPresupuestoWhatsApp(numero,datos);
-    };
-  }
-}
-
-function normalizarTelefonoWhatsApp(numero){
-  let n=String(numero||"").replace(/\\D/g,"");
-
-  if(!n)return "";
-
-  // Argentina:
-  // 299xxxxxxx / 0299xxxxxxx -> 549299xxxxxxx
-  // 54299xxxxxxx -> 549299xxxxxxx
-  // 549299xxxxxxx -> se mantiene
-  if(n.startsWith("00"))n=n.slice(2);
-  if(n.startsWith("0"))n=n.slice(1);
-
-  if(n.startsWith("54")){
-    if(!n.startsWith("549"))n="549"+n.slice(2);
-    return n;
-  }
-
-  if(n.startsWith("9") && n.length>=10){
-    return "54"+n;
-  }
-
-  return "549"+n;
-}
-
-
-async function copiarTelefonoAlPortapapeles(numero){
-  const telefono = normalizarTelefonoWhatsApp(numero);
-
-  if(!telefono)return false;
-
-  try{
-    if(navigator.clipboard && window.isSecureContext){
-      await navigator.clipboard.writeText(telefono);
-      return true;
-    }
-
-    const area=document.createElement("textarea");
-    area.value=telefono;
-    area.style.position="fixed";
-    area.style.opacity="0";
-    area.style.pointerEvents="none";
-    document.body.appendChild(area);
-    area.focus();
-    area.select();
-
-    const ok=document.execCommand("copy");
-    area.remove();
-
-    return ok;
-  }catch(e){
-    console.warn("No se pudo copiar el teléfono al portapapeles:",e);
-    return false;
-  }
-}
-
-async function compartirPresupuestoWhatsApp(numero,datos){
-  const btn=$("shareWhatsapp");
-  const st=$("shareStatus");
-
-  if(!btn)return;
-
-  const telefono=normalizarTelefonoWhatsApp(datos.telefono);
-
-  if(!telefono){
-    alert("No se encontró un número de teléfono válido para WhatsApp.");
-    return;
-  }
-
-  if(!window.isSecureContext || !navigator.share || !window.html2pdf){
-    if(st){
-      st.className="share-status error";
-      st.textContent="Este dispositivo o navegador no permite compartir el PDF directamente.";
-    }
-    return;
-  }
-
-  btn.disabled=true;
-  btn.textContent="PREPARANDO PDF...";
-
-  if(st){
-    st.className="share-status";
-    st.textContent="";
-  }
-
-  try{
-    const elemento=$("quote");
-
-    const opciones={
-      margin:0,
-      filename:`${numero.replace(/[^a-zA-Z0-9-]/g,"_")}.pdf`,
-      image:{type:"jpeg",quality:0.98},
-      html2canvas:{
-        scale:2,
-        useCORS:true,
-        backgroundColor:"#ffffff",
-        logging:false
-      },
-      jsPDF:{
-        unit:"mm",
-        format:"a4",
-        orientation:"portrait"
-      },
-      pagebreak:{mode:["avoid-all","css","legacy"]}
-    };
-
-    const blob=await html2pdf()
-      .set(opciones)
-      .from(elemento)
-      .outputPdf("blob");
-
-    const archivo=new File(
-      [blob],
-      `${numero.replace(/[^a-zA-Z0-9-]/g,"_")}.pdf`,
-      {type:"application/pdf"}
-    );
-
-    const texto=
-      `Presupuesto ${numero} — G&T S.R.L.\\n`+
-      `Cliente: ${String(datos.cliente||"").trim()}`;
-
-    const shareData={
-      title:`Presupuesto G&T S.R.L. — ${numero}`,
-      text:texto,
-      files:[archivo]
-    };
-
-    if(navigator.canShare && !navigator.canShare({files:[archivo]})){
-      throw new Error("El dispositivo no permite compartir archivos PDF desde este navegador.");
-    }
-
-    btn.textContent="ABRIENDO WHATSAPP...";
-    await navigator.share(shareData);
-
-    if(st){
-      st.className="share-status";
-      st.textContent="PDF compartido. Confirmá el envío desde WhatsApp.";
-    }
-
-  }catch(e){
-
-    if(e && e.name==="AbortError"){
-      if(st){
-        st.className="share-status";
-        st.textContent="Compartir cancelado.";
-      }
-      return;
-    }
-
-    console.error("Error al compartir presupuesto por WhatsApp:",e);
-
-    if(st){
-      st.className="share-status error";
-      st.textContent=e.message||"No se pudo preparar el PDF para compartir.";
-    }
-
-  }finally{
-    btn.disabled=false;
-    btn.textContent="🟢 ENVIAR POR WHATSAPP";
-  }
 }
 
 function quoteHtml(numero,fecha,d){
@@ -1153,24 +964,8 @@ async function cargarHistorico(numero){
     }));
     const datos={cliente:p["Cliente"]||"",dniCuit:p["DNI/CUIT"]||"",telefono:p["Teléfono"]||"",email:p["Email"]||"",direccion:p["Dirección"]||"",formaPago:p["Forma de pago"]||"",total:Number(p["Total"]||0),productos:productosHistoricos};
     const fecha=p["Fecha"]?new Date(p["Fecha"]).toLocaleDateString("es-AR"):new Date().toLocaleDateString("es-AR");
-    const telefonoCliente=String(datos.telefono||"").trim();
-
-    $("app").innerHTML=header()+`<main class="wrap">
-      <div class="historical-actions no-print">
-        <button class="btn btn-primary" id="printQuote">🖨 IMPRIMIR / GUARDAR PDF</button>
-        ${telefonoCliente
-          ? `<button class="btn whatsapp-btn" id="shareWhatsapp">🟢 ENVIAR POR WHATSAPP</button>`
-          : ""}
-        <button class="btn btn-secondary" id="newQuote">NUEVO PRESUPUESTO</button>
-      </div>
-      <div id="shareStatus" class="share-status no-print"></div>
-      ${quoteHtml(numero,fecha,datos)}
-    </main>`;
-    $("printQuote").onclick=()=>window.print();
-    $("newQuote").onclick=nuevoPresupuesto;
-    if(telefonoCliente){
-      $("shareWhatsapp").onclick=()=>compartirPresupuestoWhatsApp(numero,datos);
-    }
+    $("app").innerHTML=header()+`<main class="wrap"><div class="historical-actions no-print"><button class="btn btn-primary" id="printQuote">🖨 IMPRIMIR / GUARDAR PDF</button><button class="btn btn-secondary" id="newQuote">NUEVO PRESUPUESTO</button></div>${quoteHtml(numero,fecha,datos)}</main>`;
+    $("printQuote").onclick=()=>window.print();$("newQuote").onclick=nuevoPresupuesto;
   }catch(e){
     $("app").innerHTML=header()+`<main class="wrap"><section class="card"><div class="status error" style="display:block">${esc(e.message)}</div><div class="actions no-print"><button class="btn btn-secondary" id="back">VOLVER</button></div></section></main>`;
     $("back").onclick=()=>{verNumero="";renderApp()};
