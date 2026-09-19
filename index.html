@@ -222,20 +222,193 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 @media(max-width:800px){
   .grid{grid-template-columns:1fr 1fr}
 }
-@media(max-width:560px){
+@media screen and (max-width:560px){
   header{position:relative}
   .header-inner{align-items:flex-start}
   header img{width:125px}
   .user-pill{font-size:11px}
-  .wrap{margin:12px auto}
+  .wrap{margin:12px auto;padding-left:8px;padding-right:8px}
   .card{padding:15px;border-radius:11px}
   .grid{grid-template-columns:1fr}
   .titlebar{align-items:stretch;flex-direction:column}
   .add-btn{width:100%}
   .actions{flex-direction:column}
   .actions button{width:100%}
-  .quote-head{flex-direction:column}
-  .quote-number,.quote-meta{text-align:left}
+
+  /* =====================================================
+     PRESUPUESTO — VISTA EXCLUSIVA PARA CELULAR
+     No afecta la impresión / PDF A4.
+     ===================================================== */
+
+  .quote-preview{
+    width:100%;
+    max-width:100%;
+    padding:4mm;
+    margin:0;
+    overflow:hidden;
+  }
+
+  .quote-head{
+    display:grid;
+    grid-template-columns:1fr;
+    min-height:0;
+    padding:3mm 1mm 4mm;
+    gap:3mm;
+  }
+
+  .quote-company{
+    padding-right:0;
+  }
+
+  .quote-logo{
+    width:48mm;
+    max-width:72%;
+    margin-bottom:2mm;
+  }
+
+  .quote-company-data{
+    font-size:3mm;
+    line-height:1.4;
+  }
+
+  .quote-presentation{
+    border-left:0;
+    border-top:1px solid #BE000F;
+    padding:3mm 0 0;
+    align-items:flex-start;
+    justify-content:flex-start;
+    text-align:left;
+  }
+
+  .quote-title{
+    font-size:8mm;
+    line-height:1;
+    white-space:nowrap;
+  }
+
+  .quote-number{
+    margin-top:2mm;
+    font-size:5mm;
+    white-space:nowrap;
+  }
+
+  .quote-meta{
+    margin-top:2mm;
+    font-size:3mm;
+    text-align:left;
+    line-height:1.5;
+  }
+
+  .quote-section{
+    margin-top:3mm;
+  }
+
+  .quote-section-line{
+    height:2px;
+    margin-bottom:2.5mm;
+  }
+
+  .quote-section-title{
+    gap:2mm;
+    margin-bottom:2mm;
+    font-size:3.7mm;
+  }
+
+  .quote-section-title::before{
+    width:3.5mm;
+    height:3.5mm;
+  }
+
+  .quote-customer{
+    padding:2mm 1mm;
+    font-size:3.2mm;
+    line-height:1.65;
+  }
+
+  .quote-customer-grid{
+    grid-template-columns:1fr;
+    column-gap:0;
+    row-gap:1mm;
+  }
+
+  .quote-field[style]{
+    grid-column:auto !important;
+  }
+
+  .quote-payment{
+    margin-top:2mm;
+    padding:2.5mm 1mm;
+    flex-wrap:wrap;
+    gap:2.5mm 4mm;
+    font-size:3.1mm;
+  }
+
+  .quote-payment-title{
+    width:100%;
+    margin-right:0;
+  }
+
+  /* Contenedor táctil para desplazar SOLO la tabla */
+  .quote-table-scroll{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    border-bottom:1px solid #d7dde0;
+  }
+
+  .quote-table{
+    width:760px;
+    min-width:760px;
+    table-layout:fixed;
+  }
+
+  .quote-table th{
+    padding:2.5mm 1.5mm;
+    font-size:2.9mm;
+  }
+
+  .quote-table td{
+    padding:2.2mm 1.5mm;
+    font-size:3mm;
+  }
+
+  .quote-table small{
+    font-size:2.7mm;
+  }
+
+  .quote-total{
+    gap:3mm;
+    margin-top:3mm;
+    font-size:4.2mm;
+  }
+
+  .quote-total-value{
+    min-width:38mm;
+    padding:2.5mm 3mm;
+  }
+
+  .quote-footer-line{
+    margin-top:4mm;
+    margin-bottom:2.5mm;
+  }
+
+  .quote-foot{
+    grid-template-columns:1fr;
+    gap:3mm;
+    font-size:2.8mm;
+  }
+
+  .quote-thanks{
+    font-size:3.7mm;
+  }
+
+  .quote-legal{
+    text-align:left;
+  }
 }
 @media print{
   @page{size:A4;margin:0}
@@ -246,6 +419,7 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
   .card{border:0;box-shadow:none;padding:0;margin:0}
   .quote-preview{width:210mm;min-height:297mm;margin:0;padding:8mm;box-sizing:border-box;border:0}
   .quote-head,.quote-customer,.quote-payment,.quote-detail,.quote-total,.quote-foot{page-break-inside:avoid}
+  .quote-table-scroll{overflow:visible;width:100%;max-width:none}
   .quote-table{page-break-inside:auto}
   .quote-table tr{page-break-inside:avoid;page-break-after:auto}
 }
@@ -917,12 +1091,14 @@ const rows=d.productos.map(p=>{
       <div class="quote-section-line"></div>
       <div class="quote-section-title">Detalle del Presupuesto</div>
 
-      <table class="quote-table">
-        <thead>
-          <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="quote-table-scroll">
+        <table class="quote-table">
+          <thead>
+            <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
     </div>
 
     <div class="quote-total">
