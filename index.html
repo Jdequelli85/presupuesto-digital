@@ -806,7 +806,21 @@ function mostrarPresupuestoGuardado(numero,datos){
   $("printQuote").onclick=()=>window.print();
   $("newQuote").onclick=nuevoPresupuesto;
   if(telefonoCliente){
-    $("shareWhatsapp").onclick=()=>compartirPresupuestoWhatsApp(numero,datos);
+    $("shareWhatsapp").onclick=async ()=>{
+      const copiado=await copiarTelefonoAlPortapapeles(datos.telefono);
+
+      if(copiado){
+        const st=$("shareStatus");
+        if(st){
+          st.className="share-status";
+          st.textContent="✓ Número del cliente copiado al portapapeles.";
+        }
+      }
+
+      // Continúa exactamente con el flujo actual:
+      // generar PDF → abrir menú compartir → WhatsApp.
+      await compartirPresupuestoWhatsApp(numero,datos);
+    };
   }
 }
 
@@ -832,6 +846,37 @@ function normalizarTelefonoWhatsApp(numero){
   }
 
   return "549"+n;
+}
+
+
+async function copiarTelefonoAlPortapapeles(numero){
+  const telefono = normalizarTelefonoWhatsApp(numero);
+
+  if(!telefono)return false;
+
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(telefono);
+      return true;
+    }
+
+    const area=document.createElement("textarea");
+    area.value=telefono;
+    area.style.position="fixed";
+    area.style.opacity="0";
+    area.style.pointerEvents="none";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+
+    const ok=document.execCommand("copy");
+    area.remove();
+
+    return ok;
+  }catch(e){
+    console.warn("No se pudo copiar el teléfono al portapapeles:",e);
+    return false;
+  }
 }
 
 async function compartirPresupuestoWhatsApp(numero,datos){
