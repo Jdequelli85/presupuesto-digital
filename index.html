@@ -1223,13 +1223,26 @@ const rows=d.productos.map(p=>{
 
   const idProducto=String(p.id||"").trim().toUpperCase();
 
+  const nombreProducto=String(p.producto||"").trim().toUpperCase();
+
   const esPastina=
     idProducto==="PSO-PTNA-1K" ||
-    idProducto==="PSO-PTNA-5K";
+    idProducto==="PSO-PTNA-5K" ||
+    nombreProducto.includes("PASTINA");
+
+  // Para presupuestos históricos puede no existir el ID ni precioCaja.
+  // En ese caso, para pastinas tomamos el importe de la caja desde
+  // el subtotal y la cantidad de cajas registrada.
+  const precioCajaHistorico=
+    Number(p.precioCaja||0)>0
+      ? Number(p.precioCaja)
+      : (esPastina && Number(p.cajas||0)>0
+          ? Number(p.subtotal||0)/Number(p.cajas)
+          : 0);
 
   const precioUnitarioMostrar=
     esPastina
-      ? Number(p.precioCaja||p.precioM2||0)
+      ? (precioCajaHistorico>0 ? precioCajaHistorico : Number(p.precioM2||0))
       : Number(p.precioM2||0);
 
   return cr
