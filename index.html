@@ -198,6 +198,7 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 .quote-check{width:4mm;height:4mm;border:1.3px solid #183746;border-radius:.8mm;display:inline-block;box-sizing:border-box}
 .quote-payment-selected{display:none}
 .quote-detail{margin-top:3mm}
+.quote-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .quote-table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed}
 .quote-table th{background:#183746;color:#fff;padding:3mm 2mm;border:1px solid #183746;font-size:3.1mm;font-weight:800;text-transform:uppercase}
 .quote-table td{padding:2.5mm 2mm;border:1px solid #d7dde0;font-size:3.1mm;color:#263f4b;vertical-align:middle}
@@ -254,6 +255,8 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
   .quote-presentation{border-left:0;border-top:2px solid #BE000F;padding:4mm 0 0;align-items:flex-start;text-align:left}
   .quote-meta{text-align:left}
   .quote-customer-grid{grid-template-columns:1fr}
+  .quote-table-scroll{overflow-x:auto;max-width:100%}
+  .quote-table{min-width:760px;table-layout:fixed}
   .quote-payment{flex-wrap:wrap}
   .quote-payment-selected{margin-left:0;width:100%}
   .quote-foot{grid-template-columns:1fr}
@@ -268,7 +271,8 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
   .card{border:0;box-shadow:none;padding:0;margin:0}
   .quote-preview{width:210mm;min-height:297mm;margin:0;padding:8mm;box-sizing:border-box;border:0}
   .quote-head,.quote-customer,.quote-payment,.quote-detail,.quote-total,.quote-foot{page-break-inside:avoid}
-  .quote-table{page-break-inside:auto}
+  .quote-table-scroll{overflow:visible;width:100%;max-width:none}
+  .quote-table{min-width:0;width:100%;page-break-inside:auto}
   .quote-table tr{page-break-inside:avoid;page-break-after:auto}
 }
 </style>
@@ -1326,12 +1330,14 @@ const rows=d.productos.map(p=>{
       <div class="quote-section-line"></div>
       <div class="quote-section-title">Detalle del Presupuesto</div>
 
-      <table class="quote-table">
-        <thead>
-          <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="quote-table-scroll">
+        <table class="quote-table">
+          <thead>
+            <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
     </div>
 
     <div class="quote-total">
