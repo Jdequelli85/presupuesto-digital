@@ -584,7 +584,6 @@ async function renderApp(){
   $("forma").onchange=recalcularPreciosPorFormaPago;
   $("add").onclick=abrirModal;
   $("close").onclick=cerrarModal;
-  $("buscarProducto").oninput=renderCatalogo;
   $("cancel").onclick=()=>{if(confirm("¿Cancelar este presupuesto?")){productos=[];limpiarFormulario();renderProductos()}};
   $("generate").onclick=guardarPresupuesto;
   $("m2").oninput=calcularActual;
