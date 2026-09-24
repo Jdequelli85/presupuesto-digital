@@ -1842,7 +1842,7 @@ const rows=d.productos.map(p=>{
         <span>G&T S.R.L.</span>
       </div>
       <div class="quote-legal">
-        <div><strong>Validez: 15 días.</strong> Los precios y condiciones indicados corresponden al momento de emisión del presupuesto.</div>
+        <div><strong>Validez: ${d.validez || 15} días.</strong> Los precios y condiciones indicados corresponden al momento de emisión del presupuesto.</div>
         <div><strong>Documento no válido como factura.</strong></div>
       </div>
     </div>
@@ -1905,7 +1905,7 @@ async function cargarHistorico(numero){
         tieneOferta:Number(x["Oferta"]||0)>0
       };
     });
-    const datos={cliente:p["Cliente"]||"",dniCuit:p["DNI/CUIT"]||"",telefono:p["Teléfono"]||"",email:p["Email"]||"",direccion:p["Dirección"]||"",formaPago:p["Forma de pago"]||"",total:Number(p["Total"]||0),productos:productosHistoricos};
+    const datos={cliente:p["Cliente"]||"",dniCuit:p["DNI/CUIT"]||"",telefono:p["Teléfono"]||"",email:p["Email"]||"",direccion:p["Dirección"]||"",formaPago:p["Forma de pago"]||"",total:Number(p["Total"]||0),validez:Number(p["Validez (días)"]||0),productos:productosHistoricos};
     const fecha=p["Fecha"]?new Date(p["Fecha"]).toLocaleDateString("es-AR"):new Date().toLocaleDateString("es-AR");
     $("app").innerHTML=header()+`<main class="wrap"><div class="historical-actions no-print"><button class="btn btn-primary" id="printQuote">🖨 IMPRIMIR / GUARDAR PDF</button><button class="btn btn-secondary" id="newQuote">NUEVO PRESUPUESTO</button></div>${quoteHtml(numero,fecha,datos)}</main>`;
     $("printQuote").onclick=()=>window.print();$("newQuote").onclick=nuevoPresupuesto;
