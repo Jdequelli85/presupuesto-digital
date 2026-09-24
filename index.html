@@ -198,8 +198,21 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 .quote-payment-option{display:inline-flex;align-items:center;gap:2mm;color:#344954}
 .quote-check{width:4mm;height:4mm;border:1.3px solid #183746;border-radius:.8mm;display:inline-block;box-sizing:border-box}
 .quote-payment-selected{display:none}
-.quote-detail{margin-top:3mm}
-.quote-table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed}
+.quote-detail{margin-top:3mm;min-width:0}
+.quote-table-wrap{
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:4px;
+}
+.quote-table{
+  width:100%;
+  min-width:760px;
+  border-collapse:collapse;
+  table-layout:fixed
+}
 .quote-table th{background:#183746;color:#fff;padding:3mm 2mm;border:1px solid #183746;font-size:3.1mm;font-weight:800;text-transform:uppercase}
 .quote-table td{padding:2.5mm 2mm;border:1px solid #d7dde0;font-size:3.1mm;color:#263f4b;vertical-align:middle}
 .quote-table tbody tr:nth-child(even){background:#f4f6f7}
@@ -476,11 +489,23 @@ function categoriaProducto(p){
 
 function esMaterialCorralon(p){ return categoriaProducto(p)==="CRRL"; }
 
-function sonidoQR(){
+let qrAudioCtx = null;
+
+function prepararSonidoQR(){
   try{
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if(!AudioCtx)return;
-    const ctx = new AudioCtx();
+    if(!qrAudioCtx) qrAudioCtx = new AudioCtx();
+    if(qrAudioCtx.state === "suspended") qrAudioCtx.resume().catch(()=>{});
+  }catch(e){}
+}
+
+function sonidoQR(){
+  try{
+    prepararSonidoQR();
+    const ctx = qrAudioCtx;
+    if(!ctx)return;
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
@@ -496,7 +521,6 @@ function sonidoQR(){
 
     osc.start();
     osc.stop(ctx.currentTime + 0.14);
-    osc.onended = () => ctx.close();
   }catch(e){}
 }
 
@@ -1062,6 +1086,7 @@ function mostrarConsultaV7Producto(p){
 
 async function abrirModal(){
   scanProcesando = false;
+  prepararSonidoQR();
   $("modal").classList.add("open");
   $("scanArea").hidden=false;
   $("calcArea").hidden=true;
@@ -1788,12 +1813,14 @@ const rows=d.productos.map(p=>{
       <div class="quote-section-line"></div>
       <div class="quote-section-title">Detalle del Presupuesto</div>
 
-      <table class="quote-table">
-        <thead>
-          <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="quote-table-wrap">
+        <table class="quote-table">
+          <thead>
+            <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
     </div>
 
     ${d.productos.some(p => String(p.id||"").toUpperCase().startsWith("ENV-") || String(p.unidad||"").toUpperCase()==="FLETE")
