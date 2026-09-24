@@ -80,11 +80,12 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 }
 .modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
 .close{border:0;background:#eee;border-radius:50%;width:34px;height:34px}
-#reader{width:100%;max-width:430px;margin:15px auto;min-height:260px}
-#reader video{width:100%!important;border-radius:10px}
+#reader{width:100%;max-width:430px;margin:15px auto}
 .scan-note{font-size:13px;color:#666;text-align:center}
 .product-info{background:#f7f7f7;border-radius:10px;padding:14px;margin-bottom:15px;line-height:1.55}
 .calc-info{margin-top:10px;color:#555;font-size:13px;line-height:1.5}
+#fechaEntregaArea{margin-top:12px;padding:12px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa}
+#fechaEntregaArea input{margin-top:4px}
 .checkbox{display:flex;align-items:center;gap:8px;margin:13px 0;font-weight:700}
 .checkbox input{width:auto}
 .loading{text-align:center;padding:35px;color:#666}
@@ -198,7 +199,6 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 .quote-check{width:4mm;height:4mm;border:1.3px solid #183746;border-radius:.8mm;display:inline-block;box-sizing:border-box}
 .quote-payment-selected{display:none}
 .quote-detail{margin-top:3mm}
-.quote-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .quote-table{width:100%;min-width:0;border-collapse:collapse;table-layout:fixed}
 .quote-table th{background:#183746;color:#fff;padding:3mm 2mm;border:1px solid #183746;font-size:3.1mm;font-weight:800;text-transform:uppercase}
 .quote-table td{padding:2.5mm 2mm;border:1px solid #d7dde0;font-size:3.1mm;color:#263f4b;vertical-align:middle}
@@ -255,8 +255,6 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
   .quote-presentation{border-left:0;border-top:2px solid #BE000F;padding:4mm 0 0;align-items:flex-start;text-align:left}
   .quote-meta{text-align:left}
   .quote-customer-grid{grid-template-columns:1fr}
-  .quote-table-scroll{overflow-x:auto;max-width:100%}
-  .quote-table{min-width:760px;table-layout:fixed}
   .quote-payment{flex-wrap:wrap}
   .quote-payment-selected{margin-left:0;width:100%}
   .quote-foot{grid-template-columns:1fr}
@@ -271,20 +269,183 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
   .card{border:0;box-shadow:none;padding:0;margin:0}
   .quote-preview{width:210mm;min-height:297mm;margin:0;padding:8mm;box-sizing:border-box;border:0}
   .quote-head,.quote-customer,.quote-payment,.quote-detail,.quote-total,.quote-foot{page-break-inside:avoid}
-  .quote-table-scroll{overflow:visible;width:100%;max-width:none}
-  .quote-table{min-width:0;width:100%;page-break-inside:auto}
+  .quote-table{page-break-inside:auto}
   .quote-table tr{page-break-inside:avoid;page-break-after:auto}
 }
+
+/* =========================================================
+   CONSULTA DE CATÁLOGO V7 — POPUP INTEGRADO
+   ========================================================= */
+.productos-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.catalogo-consulta-btn{white-space:nowrap}
+.consulta-v7-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:300;
+  display:none;align-items:center;justify-content:center;padding:14px
+}
+.consulta-v7-backdrop.open{display:flex}
+.consulta-v7-modal{
+  width:min(1180px,100%);height:min(92vh,900px);overflow:auto;
+  background:#f3f4f6;border-radius:16px;
+  box-shadow:0 18px 60px rgba(0,0,0,.35);position:relative
+}
+.consulta-v7-header{
+  background:#fff;border-bottom:1px solid #e5e7eb;padding:13px 18px;
+  position:sticky;top:0;z-index:5
+}
+.consulta-v7-header-inner{
+  max-width:1180px;margin:auto;display:flex;align-items:center;
+  justify-content:space-between;gap:15px
+}
+.consulta-v7-header img{width:145px;height:auto;display:block}
+.consulta-v7-user{font-size:12px;color:#555;background:#f7f7f7;border:1px solid #ddd;border-radius:20px;padding:7px 11px}
+.consulta-v7-close{
+  border:0;background:#eee;border-radius:50%;width:34px;height:34px;
+  font-size:22px;line-height:1;flex:0 0 auto
+}
+.consulta-v7-wrap{max-width:1180px;margin:20px auto;padding:0 15px 30px}
+.consulta-v7-head{text-align:center;margin-bottom:18px}
+.consulta-v7-head h1{color:#183746;font-size:27px;font-weight:900;letter-spacing:.2px;margin:0 0 4px}
+.consulta-v7-subtitle{color:#6b7280;font-size:13px}
+.consulta-v7-grid{
+  display:grid;grid-template-columns:minmax(330px,.82fr) minmax(0,1.18fr);
+  gap:16px;align-items:stretch
+}
+.consulta-v7-panel,.consulta-v7-modulo{
+  background:#fff;border:1px solid #e2e2e2;border-radius:14px;padding:18px;
+  box-shadow:0 3px 14px rgba(0,0,0,.05);min-width:0
+}
+.consulta-v7-left{min-width:0}
+.consulta-v7-details{min-width:0;display:grid;grid-template-rows:auto auto;gap:16px}
+.consulta-v7-titleline{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.consulta-v7-title{display:flex;align-items:center;gap:8px;color:#183746;font-size:18px;font-weight:900}
+.consulta-v7-icon{font-size:21px;line-height:1}
+.consulta-v7-type{
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;
+  min-width:115px;padding:7px 13px;border-radius:20px;background:#fff0f1;
+  border:1px solid #f2b7bd;color:#BE000F;font-size:11px;font-weight:900;text-transform:uppercase
+}
+.consulta-v7-search-label{color:#183746;font-size:14px;margin-bottom:7px}
+.consulta-v7-search{position:relative}
+.consulta-v7-search input{padding-left:42px;font-size:15px}
+.consulta-v7-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#777;pointer-events:none;font-size:18px}
+.consulta-v7-results-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:15px;margin-bottom:8px;color:#183746;font-weight:800;font-size:13px}
+.consulta-v7-count{color:#777;font-weight:400}
+.consulta-v7-list{
+  display:flex;flex-direction:column;gap:5px;height:250px;overflow-y:auto;overflow-x:hidden;
+  padding:1px 4px 1px 1px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa
+}
+.consulta-v7-item{
+  flex:0 0 57px;width:100%;text-align:left;background:#fff;border:1px solid #d9dce1;
+  border-radius:8px;padding:8px 11px;display:flex;align-items:center;
+  justify-content:space-between;gap:12px;transition:.15s
+}
+.consulta-v7-item:hover,.consulta-v7-item:focus{border-color:#BE000F;background:#fff7f7;outline:none}
+.consulta-v7-item-main{min-width:0}
+.consulta-v7-item strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.consulta-v7-item span{display:block;margin-top:3px;font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.consulta-v7-empty{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#777;padding:20px}
+.consulta-v7-product-name{color:#183746;font-size:26px;font-weight:900;line-height:1.12;overflow-wrap:anywhere;word-break:break-word;margin-bottom:8px}
+.consulta-v7-data{font-size:14px;color:#666;line-height:1.4}
+.consulta-v7-data strong{color:#183746}
+.consulta-v7-colors{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.consulta-v7-color{display:inline-block;background:#f3f4f6;border:1px solid #dfe2e5;border-radius:15px;padding:4px 8px;font-size:11px;color:#444}
+.consulta-v7-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:4px}
+.consulta-v7-dato{min-width:0;border:1px solid #e0e3e6;border-radius:9px;padding:10px;background:#fafafa;text-align:center}
+.consulta-v7-label{display:block;color:#68727c;font-size:10px;font-weight:800;text-transform:uppercase;margin-bottom:5px;line-height:1.15}
+.consulta-v7-value{display:block;color:#183746;font-size:15px;font-weight:900;line-height:1.2;overflow-wrap:anywhere}
+.consulta-v7-price{background:#fff;border-top:3px solid #d9dee1}
+.consulta-v7-offer{background:#edf8f0;border-color:#b9dfc2}
+.consulta-v7-offer .consulta-v7-label,.consulta-v7-offer .consulta-v7-value{color:#176b2c}
+.consulta-v7-card{background:#f3f7fb;border-color:#cbdceb}
+.consulta-v7-card .consulta-v7-label,.consulta-v7-card .consulta-v7-value{color:#245a7a}
+.consulta-v7-box{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:10px;padding:10px;
+  background:#f7f8f9;border:1px solid #e1e4e7;border-radius:9px
+}
+.consulta-v7-box-data{min-width:0;padding:0 10px;border-right:1px solid #dfe2e5;text-align:center}
+.consulta-v7-box-data:first-child{padding-left:2px}.consulta-v7-box-data:last-child{border-right:0;padding-right:2px}
+.consulta-v7-box-data .consulta-v7-label{margin-bottom:3px}.consulta-v7-box-data .consulta-v7-value{font-size:14px}
+.consulta-v7-note{margin-top:9px;color:#777;font-size:11px;line-height:1.4}
+.consulta-v7-placeholder{color:#777;font-size:13px;padding:5px 0}
+@media(max-width:850px){.consulta-v7-grid{grid-template-columns:1fr}}
+@media(max-width:560px){
+  .consulta-v7-backdrop{padding:0}
+  .consulta-v7-modal{width:100%;height:100vh;max-height:none;border-radius:0}
+  .consulta-v7-wrap{margin:12px auto;padding:0 12px 25px}
+  .consulta-v7-panel,.consulta-v7-modulo{padding:15px}
+  .consulta-v7-titleline{gap:8px}
+  .consulta-v7-product-name{font-size:22px}
+  .consulta-v7-prices{grid-template-columns:1fr}
+  .consulta-v7-box{grid-template-columns:1fr;gap:8px}
+  .consulta-v7-box-data{padding:0 0 8px;border-right:0;border-bottom:1px solid #dfe2e5}
+  .consulta-v7-box-data:last-child{padding-bottom:0;border-bottom:0}
+  .consulta-v7-type{min-width:auto;padding:6px 9px}
+  .productos-actions{width:100%;flex-direction:column}
+  .productos-actions button{width:100%}
+}
+
+@media(min-width:1000px){
+  .wrap{max-width:1180px}
+  .header-inner{max-width:1180px}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .modal-productos{width:min(820px,100%)}
+  .catalogo-lista{max-height:58vh}
+}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){
+  header{position:relative}
+  .header-inner{align-items:flex-start}
+  header img{width:125px}
+  .user-pill{font-size:11px}
+  .wrap{margin:12px auto}
+  .card{padding:15px;border-radius:11px}
+  .grid{grid-template-columns:1fr}
+  .titlebar{align-items:stretch;flex-direction:column}
+  .add-btn{width:100%}
+  .actions{flex-direction:column}
+  .actions button{width:100%}
+  .quote-head{grid-template-columns:1fr;gap:5mm}
+  .quote-presentation{border-left:0;border-top:2px solid #BE000F;padding:4mm 0 0;align-items:flex-start;text-align:left}
+  .quote-meta{text-align:left}
+  .quote-customer-grid{grid-template-columns:1fr}
+  .quote-payment{flex-wrap:wrap}
+  .quote-payment-selected{margin-left:0;width:100%}
+  .quote-foot{grid-template-columns:1fr}
+  .quote-legal{text-align:left}
+}
+@media print{
+  @page{size:A4;margin:0}
+  html,body{width:210mm;min-height:297mm;margin:0;padding:0;background:#fff}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  header,.no-print{display:none!important}
+  .wrap{width:210mm;max-width:none;margin:0;padding:0}
+  .card{border:0;box-shadow:none;padding:0;margin:0}
+  .quote-preview{width:210mm;min-height:297mm;margin:0;padding:8mm;box-sizing:border-box;border:0}
+  .quote-head,.quote-customer,.quote-payment,.quote-detail,.quote-total,.quote-foot{page-break-inside:avoid}
+  .quote-table{page-break-inside:auto}
+  .quote-table tr{page-break-inside:avoid;page-break-after:auto}
+}
+
 </style>
 </head>
 <body>
 
 <div id="app"></div>
 
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby_3DebaIbZZW2qZ7ShkePBD40Bzo8wGyaHAw8w0omsKahF6CpuUEEPaG2ox3fGkAqk0w/exec";
 const LOGO_URL = "https://raw.githubusercontent.com/Jdequelli85/qr-corralon/main/logo.png";
+
+/*
+ * CARGA OPTIMIZADA DEL CATÁLOGO
+ * ------------------------------
+ * El HTML sigue siendo autocontenido.
+ * El catálogo se guarda localmente para evitar volver a descargarlo
+ * completo cada vez que se recarga la página.
+ */
+const CATALOGO_CACHE_KEY = "gt_catalogo_cache_v1";
+const CATALOGO_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 horas
+
 
 let token = sessionStorage.getItem("gt_token") || "";
 let vendedor = sessionStorage.getItem("gt_usuario") || "";
@@ -292,8 +453,6 @@ let productos = [];
 let catalogoProductos = [];
 let catalogoOpciones = [];
 let productoActual = null;
-let scanner = null;
-let scanProcesando = false;
 let verNumero = new URLSearchParams(location.search).get("ver") || "";
 
 const $ = id => document.getElementById(id);
@@ -308,6 +467,7 @@ function categoriaProducto(p){
   if(id.startsWith("POR-")) return "POR";
   if(id.startsWith("REV-")) return "REV";
   if(id.startsWith("PSO-")) return "PSO";
+  if(id.startsWith("ENV-")) return "ENV";
   return "OTRO";
 }
 
@@ -344,13 +504,22 @@ function nuevoPresupuesto(){
   renderApp();
 }
 
-function jsonp(params){
+function jsonp(params, timeoutMs=20000){
   return new Promise((resolve,reject)=>{
     const callback = "gtcb_" + Date.now() + "_" + Math.floor(Math.random()*100000);
     const script = document.createElement("script");
     const q = new URLSearchParams({...params,callback,_ts:Date.now()});
-    let timer = setTimeout(()=>{cleanup();reject(new Error("Tiempo de espera agotado."));},20000);
-    function cleanup(){clearTimeout(timer);delete window[callback];script.remove();}
+    let timer = setTimeout(()=>{cleanup();reject(new Error("Tiempo de espera agotado."));},timeoutMs);
+    let terminado = false;
+
+    function cleanup(){
+      if(terminado)return;
+      terminado=true;
+      clearTimeout(timer);
+      delete window[callback];
+      script.remove();
+    }
+
     window[callback] = data => {cleanup();resolve(data)};
     script.onerror = ()=>{cleanup();reject(new Error("No se pudo conectar con el servidor."))};
     script.src = API_URL + "?" + q.toString();
@@ -358,17 +527,45 @@ function jsonp(params){
   });
 }
 
-async function cargarCatalogo(){
-  const r = await jsonp({accion:"catalogo",token});
-
-  if(!r?.ok) {
-    throw new Error(r?.error || "No se pudo cargar el catálogo de productos.");
+function guardarCatalogoCache(){
+  try{
+    localStorage.setItem(CATALOGO_CACHE_KEY, JSON.stringify({
+      fecha: Date.now(),
+      productos: catalogoProductos
+    }));
+  }catch(e){
+    // Si el almacenamiento local está lleno/bloqueado,
+    // la aplicación continúa funcionando normalmente.
   }
+}
 
-  catalogoProductos = Array.isArray(r.productos)
-    ? r.productos
-    : (Array.isArray(r.catalogo) ? r.catalogo : []);
+function cargarCatalogoDesdeCache(){
+  try{
+    const raw = localStorage.getItem(CATALOGO_CACHE_KEY);
+    if(!raw)return false;
 
+    const cache = JSON.parse(raw);
+    if(!cache || !Array.isArray(cache.productos) || !cache.productos.length){
+      localStorage.removeItem(CATALOGO_CACHE_KEY);
+      return false;
+    }
+
+    const antiguedad = Date.now() - Number(cache.fecha || 0);
+    if(antiguedad > CATALOGO_CACHE_MAX_AGE){
+      localStorage.removeItem(CATALOGO_CACHE_KEY);
+      return false;
+    }
+
+    construirCatalogo(cache.productos);
+    return !!catalogoOpciones.length;
+  }catch(e){
+    try{localStorage.removeItem(CATALOGO_CACHE_KEY)}catch(_e){}
+    return false;
+  }
+}
+
+function construirCatalogo(productos){
+  catalogoProductos = Array.isArray(productos) ? productos : [];
   catalogoOpciones = [];
 
   /*
@@ -392,6 +589,26 @@ async function cargarCatalogo(){
 
     const producto = String(p["Producto"] || "").trim();
     const medida = String(p["Medida"] || "").trim();
+
+    /*
+     * ENV:
+     * El nombre de la zona es la característica principal.
+     * No utiliza medida ni color.
+     */
+    if(categoria === "ENV"){
+      const clave = `ENV|${String(p["ID"] || "").trim().toUpperCase()}`;
+
+      if(claves.has(clave)) return;
+
+      claves.add(clave);
+
+      catalogoOpciones.push({
+        ...p,
+        _colorSeleccionado: ""
+      });
+
+      return;
+    }
 
     /*
      * CRRL:
@@ -436,13 +653,57 @@ async function cargarCatalogo(){
   }
 }
 
+async function actualizarCatalogoServidor(){
+  const r = await jsonp({accion:"catalogo",token});
+
+  if(!r?.ok) {
+    throw new Error(r?.error || "No se pudo cargar el catálogo de productos.");
+  }
+
+  const productosNuevos = Array.isArray(r.productos)
+    ? r.productos
+    : (Array.isArray(r.catalogo) ? r.catalogo : []);
+
+  construirCatalogo(productosNuevos);
+  guardarCatalogoCache();
+  return true;
+}
+
+async function cargarCatalogo({usarCache=true,esperarServidor=true}={}){
+  /*
+   * PRIMERA ETAPA:
+   * si ya tenemos catálogo local, lo mostramos inmediatamente.
+   */
+  if(usarCache && cargarCatalogoDesdeCache()){
+    /*
+     * SEGUNDA ETAPA:
+     * actualizar en segundo plano. No bloqueamos la interfaz.
+     */
+    actualizarCatalogoServidor().catch(err=>{
+      console.warn("No se pudo actualizar el catálogo en segundo plano:", err.message);
+    });
+    return true;
+  }
+
+  /*
+   * Primera carga o caché inexistente:
+   * aquí sí necesitamos esperar al servidor.
+   */
+  if(esperarServidor){
+    await actualizarCatalogoServidor();
+    return true;
+  }
+
+  return false;
+}
+
 function mostrarCargaCatalogo(){
   $("app").innerHTML = `
     <main class="wrap">
       <section class="card login-card loading-catalogo">
         <img class="logo-login" src="${LOGO_URL}" alt="G&T S.R.L.">
         <h1>Cargando productos...</h1>
-        <div class="subtitle">Preparando el catálogo para esta sesión. Después, cada QR se buscará localmente.</div>
+        <div class="subtitle">Preparando el catálogo para esta sesión.</div>
         <div class="catalog-spinner" aria-label="Cargando"></div>
       </section>
     </main>`;
@@ -486,7 +747,7 @@ function mostrarLogin(mensaje=""){
       sessionStorage.setItem("gt_token",token);
       sessionStorage.setItem("gt_usuario",vendedor);
       mostrarCargaCatalogo();
-      await cargarCatalogo();
+      await cargarCatalogo({usarCache:true,esperarServidor:true});
       renderApp();
     }catch(err){
       st.className="status error"; st.textContent=err.message;
@@ -507,8 +768,21 @@ async function renderApp(){
   if(verNumero){renderLoadingHistorico();cargarHistorico(verNumero);return;}
   if(!catalogoOpciones.length){
     try{
-      mostrarCargaCatalogo();
-      await cargarCatalogo();
+      /*
+       * Primero intenta el catálogo local. Si existe,
+       * la pantalla se construye inmediatamente y la
+       * actualización al servidor continúa en segundo plano.
+       */
+      const teniaCache = cargarCatalogoDesdeCache();
+
+      if(!teniaCache){
+        mostrarCargaCatalogo();
+        await actualizarCatalogoServidor();
+      }else{
+        actualizarCatalogoServidor().catch(err=>{
+          console.warn("No se pudo actualizar el catálogo en segundo plano:", err.message);
+        });
+      }
     }catch(e){
       mostrarLogin("No se pudo cargar el catálogo: " + e.message);
       return;
@@ -535,7 +809,10 @@ async function renderApp(){
     <section class="card">
       <div class="titlebar">
         <h2>Productos</h2>
-        <button class="btn btn-primary add-btn" id="add">＋ AGREGAR PRODUCTO</button>
+        <div class="productos-actions">
+          <button class="btn btn-secondary catalogo-consulta-btn" id="openConsultaCatalogo">📦 CATÁLOGO</button>
+          <button class="btn btn-primary add-btn" id="add">＋ AGREGAR PRODUCTO</button>
+        </div>
       </div>
       <div id="empty" class="empty">Todavía no se agregaron productos.</div>
 <div class="table-wrap"><table id="table" hidden>
@@ -561,13 +838,66 @@ async function renderApp(){
     </section>
   </main>
 
+  <div class="consulta-v7-backdrop" id="consultaV7Modal">
+    <div class="consulta-v7-modal">
+      <div class="consulta-v7-header">
+        <div class="consulta-v7-header-inner">
+          <img src="${LOGO_URL}" alt="G&T S.R.L.">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="consulta-v7-user">Vendedor: <strong>${esc(vendedor)}</strong></div>
+            <button type="button" class="consulta-v7-close" id="closeConsultaV7" aria-label="Cerrar">×</button>
+          </div>
+        </div>
+      </div>
+      <main class="consulta-v7-wrap">
+        <div class="consulta-v7-head">
+          <h1>Consulta de Productos</h1>
+          <div class="consulta-v7-subtitle">Buscá un producto para consultar sus precios y características.</div>
+        </div>
+        <div class="consulta-v7-grid">
+          <section class="consulta-v7-panel consulta-v7-left">
+            <label class="consulta-v7-search-label" for="consultaV7Buscar">🔎 BUSCAR PRODUCTO</label>
+            <div class="consulta-v7-search">
+              <span class="consulta-v7-search-icon">⌕</span>
+              <input id="consultaV7Buscar" type="search" placeholder="Nombre, medida..." autocomplete="off">
+            </div>
+            <div class="consulta-v7-results-title">
+              <span>Resultados</span><span id="consultaV7Count" class="consulta-v7-count"></span>
+            </div>
+            <div id="consultaV7Lista" class="consulta-v7-list"></div>
+          </section>
+          <div class="consulta-v7-details">
+            <section class="consulta-v7-modulo">
+              <div class="consulta-v7-titleline">
+                <div class="consulta-v7-title"><span class="consulta-v7-icon">📦</span><span>Información del Producto</span></div>
+                <div id="consultaV7Tipo" class="consulta-v7-type">PRODUCTO</div>
+              </div>
+              <div id="consultaV7Superior">
+                <div class="consulta-v7-placeholder">Seleccioná un producto para ver sus características.</div>
+              </div>
+            </section>
+            <section class="consulta-v7-modulo">
+              <div class="consulta-v7-titleline">
+                <div class="consulta-v7-title"><span class="consulta-v7-icon">🏷️</span><span>Precios y Detalles</span></div>
+              </div>
+              <div id="consultaV7Inferior">
+                <div class="consulta-v7-placeholder">Seleccioná un producto para consultar precios y datos de caja.</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="modal">
     <div class="modal modal-productos">
       <div class="modal-head"><h3>Agregar producto</h3><button class="close" id="close">×</button></div>
-      <div id="scanArea">
-        <p class="scan-note">Escaneá el QR del producto con la cámara.</p>
-        <div id="reader"></div>
-        <div id="scanError" class="status"></div>
+      <div id="catalogArea">
+        <p class="scan-note">Seleccioná un producto del catálogo.</p>
+        <input id="buscarProducto" type="search" placeholder="🔎 Buscar por producto o medida..." autocomplete="off">
+        <div id="catalogoLista" class="catalogo-lista"></div>
+        <div id="catalogoError" class="status"></div>
       </div>
       <div id="calcArea" hidden>
         <div id="productInfo" class="product-info"></div>
@@ -580,19 +910,29 @@ async function renderApp(){
           <label>Cantidad *</label>
           <input id="cantidad" type="number" min="1" step="1" placeholder="Ej.: 10">
         </div>
+        <div id="fechaEntregaArea" hidden>
+          <label>Fecha de entrega *</label>
+          <input id="fechaEntrega" type="date">
+          <div class="calc-info">Seleccioná la fecha prevista para la entrega.</div>
+        </div>
         <div id="calcInfo" class="calc-info"></div>
         <button class="btn btn-primary btn-large" id="confirm">AGREGAR AL PRESUPUESTO</button>
       </div>
     </div>
   </div>`;
   $("forma").onchange=recalcularPreciosPorFormaPago;
+  $("openConsultaCatalogo").onclick=abrirConsultaCatalogo;
+  $("closeConsultaV7").onclick=cerrarConsultaCatalogo;
+  $("consultaV7Buscar").oninput=renderConsultaV7Catalogo;
   $("add").onclick=abrirModal;
   $("close").onclick=cerrarModal;
+  $("buscarProducto").oninput=renderCatalogo;
   $("cancel").onclick=()=>{if(confirm("¿Cancelar este presupuesto?")){productos=[];limpiarFormulario();renderProductos()}};
   $("generate").onclick=guardarPresupuesto;
   $("m2").oninput=calcularActual;
   $("zocalo").onchange=calcularActual;
   $("cantidad").oninput=calcularActual;
+  $("fechaEntrega").onchange=calcularActual;
   renderProductos();
 }
 
@@ -601,131 +941,139 @@ function limpiarFormulario(){
   if($("forma"))$("forma").value="Contado";
 }
 
-async function iniciarLectorQR(){
-  scanProcesando = false;
-
-  if(typeof Html5Qrcode === "undefined"){
-    $("scanError").className = "status error";
-    $("scanError").textContent =
-      "No se pudo cargar el lector QR. Recargá la página e intentá nuevamente.";
-    return;
-  }
-
-  if(scanner){
-    try{await scanner.stop();}catch(e){}
-    try{scanner.clear();}catch(e){}
-    scanner = null;
-  }
-
-  $("scanArea").hidden = false;
-  $("calcArea").hidden = true;
-  $("scanError").className = "status";
-  $("scanError").textContent = "";
-
-  try{
-    scanner = new Html5Qrcode("reader");
-
-    await scanner.start(
-      {facingMode:"environment"},
-      {
-        fps:10,
-        qrbox:{width:250,height:250},
-        aspectRatio:1
-      },
-      onScan
-    );
-
-  }catch(e){
-    $("scanError").className = "status error";
-    $("scanError").textContent =
-      "No se pudo abrir la cámara. Verificá el permiso del navegador.";
-
-    scanProcesando = false;
-  }
+/* =========================================================
+   CONSULTA DE CATÁLOGO V7 — LÓGICA DEL POPUP
+   Usa el catálogo y la sesión ya cargados por Presupuesto Digital.
+   No modifica Apps Script ni app-NUEVO.js.
+   ========================================================= */
+function abrirConsultaCatalogo(){
+  const modal=$("consultaV7Modal");
+  if(!modal)return;
+  modal.classList.add("open");
+  $("consultaV7Buscar").value="";
+  renderConsultaV7Catalogo();
+  limpiarConsultaV7Detalle();
+  setTimeout(()=>$("consultaV7Buscar")?.focus(),60);
 }
 
-async function abrirModal(){
+function cerrarConsultaCatalogo(){
+  $("consultaV7Modal")?.classList.remove("open");
+}
+
+function limpiarConsultaV7Detalle(){
+  if($("consultaV7Tipo"))$("consultaV7Tipo").textContent="PRODUCTO";
+  if($("consultaV7Superior"))$("consultaV7Superior").innerHTML='<div class="consulta-v7-placeholder">Seleccioná un producto para ver sus características.</div>';
+  if($("consultaV7Inferior"))$("consultaV7Inferior").innerHTML='<div class="consulta-v7-placeholder">Seleccioná un producto para consultar precios y datos de caja.</div>';
+}
+
+function consultaV7Categoria(p){
+  const id=String(p?.["ID"]||"").trim().toUpperCase();
+  if(id.startsWith("CRRL-"))return "CRRL";
+  if(id.startsWith("CER-"))return "CER";
+  if(id.startsWith("POR-"))return "POR";
+  if(id.startsWith("REV-"))return "REV";
+  if(id.startsWith("PSO-"))return "PSO";
+  return "OTRO";
+}
+
+function consultaV7NombreCategoria(c){
+  return ({CRRL:"Material de corralón",CER:"Cerámico",POR:"Porcelanato",REV:"Revestimiento",PSO:"Piso",ENV:"Envío",OTRO:"Producto"})[c]||"Producto";
+}
+
+function consultaV7Texto(p){
+  const producto=String(p["Producto"]||"").trim();
+  const medida=String(p["Medida"]||"").trim();
+  return medida?`${producto} ${medida}`:producto;
+}
+
+function renderConsultaV7Catalogo(){
+  const lista=$("consultaV7Lista");
+  if(!lista)return;
+  const q=String($("consultaV7Buscar")?.value||"").trim().toLocaleLowerCase("es-AR");
+  const resultados=catalogoOpciones.filter(p=>!q||consultaV7Texto(p).toLocaleLowerCase("es-AR").includes(q));
+  $("consultaV7Count").textContent=resultados.length+(resultados.length===1?" producto":" productos");
+  if(!resultados.length){lista.innerHTML='<div class="consulta-v7-empty">No se encontraron productos.</div>';return;}
+  lista.innerHTML=resultados.map(p=>{
+    const i=catalogoOpciones.indexOf(p);
+    const medida=String(p["Medida"]||"").trim();
+    return `<button type="button" class="consulta-v7-item" data-consulta-v7-index="${i}"><div class="consulta-v7-item-main"><strong>${esc(p["Producto"]||"")}</strong><span>${esc(medida||"Sin medida")}</span></div></button>`;
+  }).join("");
+}
+
+function consultaV7Seleccionar(indice){
+  const p=catalogoOpciones[indice];
+  if(p)mostrarConsultaV7Producto(p);
+}
+
+function mostrarConsultaV7Producto(p){
+  const superior=$("consultaV7Superior"), inferior=$("consultaV7Inferior"), tipo=$("consultaV7Tipo");
+  if(!superior||!inferior||!tipo)return;
+  const categoria=consultaV7Categoria(p);
+  const producto=String(p["Producto"]||"").trim();
+  const medida=String(p["Medida"]||"").trim();
+  const colorRaw=String(p["Color"]||"").trim();
+  const precioContado=Number(p["Precio Contado"]||0);
+  const precioTarjeta=Number(p["Precio Tarjeta"]||0);
+  const oferta=Number(p["OFERTA"]||0);
+  const tieneOferta=Number.isFinite(oferta)&&oferta>0;
+  const cajaM2=Number(p["Caja m²"]||0);
+  const kgCaja=Number(p["Kg/Caja"]||0);
+  const esPastina=categoria==="PSO"&&!medida;
+  const precioCajaContado=(precioContado>0&&cajaM2>0)?precioContado*cajaM2:0;
+  const precioCajaTarjeta=(precioTarjeta>0&&cajaM2>0)?precioTarjeta*cajaM2:0;
+  const colores=colorRaw.split(/\s*-\s*/).map(c=>c.trim()).filter(Boolean);
+  tipo.textContent=esPastina?"PASTINA":consultaV7NombreCategoria(categoria);
+  let superiorHtml=`<div class="consulta-v7-product-name">${esc(producto)}</div>`;
+  if(medida)superiorHtml+=`<div class="consulta-v7-data">Medida: <strong>${esc(medida)}</strong></div>`;
+  if(colores.length)superiorHtml+=`<div class="consulta-v7-data">Color:<div class="consulta-v7-colors">${colores.map(c=>`<span class="consulta-v7-color">${esc(c)}</span>`).join("")}</div></div>`;
+  superior.innerHTML=superiorHtml;
+  let h="";
+  if(esPastina){
+    h+=`<div class="consulta-v7-prices">`;
+    if(precioCajaContado>0)h+=`<div class="consulta-v7-dato consulta-v7-price"><span class="consulta-v7-label">Precio por caja (contado)</span><span class="consulta-v7-value">$ ${fmt(precioCajaContado)}</span></div>`;
+    if(precioCajaTarjeta>0)h+=`<div class="consulta-v7-dato consulta-v7-price consulta-v7-card"><span class="consulta-v7-label">Precio por caja (tarjeta)</span><span class="consulta-v7-value">$ ${fmt(precioCajaTarjeta)}</span></div>`;
+    if(cajaM2>0)h+=`<div class="consulta-v7-dato"><span class="consulta-v7-label">m² por caja</span><span class="consulta-v7-value">${fmt(cajaM2)} m²</span></div>`;
+    h+=`</div>`;
+    if(kgCaja>0)h+=`<div class="consulta-v7-note">${fmt(kgCaja)} kg por caja.</div>`;
+  }else{
+    h+=`<div class="consulta-v7-prices">`;
+    const sufijoPrecio=categoria==="ENV"?"/ flete":(categoria==="CRRL"?"/ unidad":"/ m²");
+    if(precioContado>0)h+=`<div class="consulta-v7-dato consulta-v7-price"><span class="consulta-v7-label">Precio contado</span><span class="consulta-v7-value">$ ${fmt(precioContado)} ${sufijoPrecio}</span></div>`;
+    if(tieneOferta)h+=`<div class="consulta-v7-dato consulta-v7-price consulta-v7-offer"><span class="consulta-v7-label">Precio oferta</span><span class="consulta-v7-value">$ ${fmt(oferta)} ${sufijoPrecio}</span></div>`;
+    if(precioTarjeta>0)h+=`<div class="consulta-v7-dato consulta-v7-price consulta-v7-card"><span class="consulta-v7-label">Precio tarjeta</span><span class="consulta-v7-value">$ ${fmt(precioTarjeta)} ${sufijoPrecio}</span></div>`;
+    h+=`</div>`;
+    const datos=[];
+    if(cajaM2>0)datos.push({label:"m² por caja",valor:`${fmt(cajaM2)} m²`});
+    if(medida&&cajaM2>0){
+      const partes=medida.toLowerCase().split("x").map(v=>Number(String(v).trim().replace(",",".")));
+      if(partes.length===2&&Number.isFinite(partes[0])&&Number.isFinite(partes[1])&&partes[0]>0&&partes[1]>0){
+        const area=(partes[0]/100)*(partes[1]/100), unidades=Math.round(cajaM2/area);
+        if(unidades>0)datos.push({label:"Cantidad por caja",valor:`${fmt0(unidades)} unidades`});
+      }
+    }
+    if(cajaM2>0&&precioContado>0)datos.unshift({label:"Precio por caja",valor:`$ ${fmt(precioContado*cajaM2)}`});
+    if(datos.length)h+=`<div class="consulta-v7-box">${datos.map(d=>`<div class="consulta-v7-box-data"><span class="consulta-v7-label">${esc(d.label)}</span><span class="consulta-v7-value">${esc(d.valor)}</span></div>`).join("")}</div>`;
+    if(kgCaja>0)h+=`<div class="consulta-v7-note">${fmt(kgCaja)} kg por caja.</div>`;
+  }
+  inferior.innerHTML=h;
+}
+
+
+function abrirModal(){
   productoActual = null;
   $("modal").classList.add("open");
-  $("scanArea").hidden = false;
-  $("calcArea").hidden = true;
-  await iniciarLectorQR();
+  $("catalogArea").hidden=false;
+  $("calcArea").hidden=true;
+  $("catalogoError").className="status";
+  $("catalogoError").textContent="";
+  $("buscarProducto").value="";
+  renderCatalogo();
+  setTimeout(()=>$("buscarProducto")?.focus(),50);
 }
 
-async function cerrarModal(){
-  scanProcesando = false;
-
-  if(scanner){
-    try{await scanner.stop();}catch(e){}
-    try{scanner.clear();}catch(e){}
-    scanner = null;
-  }
-
+function cerrarModal(){
   $("modal")?.classList.remove("open");
-  productoActual = null;
-}
-
-async function onScan(text){
-  if(scanProcesando)return;
-
-  const id = extraerId(text);
-  if(!id)return;
-
-  scanProcesando = true;
-
-  if(scanner){
-    try{await scanner.stop();}catch(e){}
-    try{scanner.clear();}catch(e){}
-    scanner = null;
-  }
-
-  $("scanArea").hidden = true;
-
-  try{
-    const producto = buscarProductoCatalogo(id);
-
-    if(!producto){
-      throw new Error(
-        "Producto no encontrado en el catálogo cargado."
-      );
-    }
-
-    // El sonido se mantiene inmediatamente después de una lectura válida.
-    sonidoQR();
-
-    productoActual = {...producto};
-
-    mostrarProducto();
-
-  }catch(e){
-
-    $("scanArea").hidden = false;
-    $("scanError").className = "status error";
-    $("scanError").textContent = e.message;
-
-    // Pequeña pausa para que el usuario vea el mensaje y luego
-    // se vuelve a habilitar el lector sin depender del servidor.
-    setTimeout(async ()=>{
-      if(!$("modal")?.classList.contains("open"))return;
-      try{
-        await iniciarLectorQR();
-      }catch(_){}
-    },800);
-  }
-}
-
-function extraerId(text){
-  const t=String(text||"").trim();
-  const m=t.match(/[?&]id=([^&]+)/i);
-  return m?decodeURIComponent(m[1]):t;
-}
-
-function buscarProductoCatalogo(id){
-  const buscado=String(id||"").trim().toUpperCase();
-
-  return catalogoProductos.find(p =>
-    String(p?.["ID"]||"").trim().toUpperCase()===buscado
-  ) || null;
+  productoActual=null;
 }
 
 function textoOpcionCatalogo(p){
@@ -775,6 +1123,12 @@ function mostrarProducto(){
   const p=productoActual;
   const crrl=esMaterialCorralon(p);
 
+  // La fecha de entrega solo corresponde a productos ENV-.
+  // Siempre la ocultamos al abrir un producto y la mostramos
+  // únicamente en el bloque específico de ENV.
+  $("fechaEntregaArea").hidden=true;
+  $("fechaEntrega").value="";
+
   const oferta=Number(p["OFERTA"]||0);
   const tieneOferta=Number.isFinite(oferta)&&oferta>0;
 
@@ -786,6 +1140,25 @@ function mostrarProducto(){
     forma==="Tarjeta"&&precioTarjeta>0
       ? precioTarjeta
       : (tieneOferta?oferta:precioContado);
+
+  /* =========================
+     ENVÍO / FLETE
+     ========================= */
+  const esENV = categoriaProducto(p) === "ENV";
+
+  if(esENV){
+    $("productInfo").innerHTML=`
+      <strong>${esc(p["Producto"])}</strong><br>
+      <strong>${tieneOferta?"🔥 OFERTA":"Precio"}: $ ${fmt(precio)} /flete`;
+    $("m2Area").hidden=true;
+    $("cantidadArea").hidden=true;
+    $("fechaEntregaArea").hidden=false;
+    $("fechaEntrega").value="";
+    $("calcInfo").textContent="Servicio de entrega · Cantidad: 1 flete";
+    $("calcArea").hidden=false;
+    $("fechaEntrega").focus();
+    return;
+  }
 
   /* =========================
      MATERIAL DE CORRALÓN
@@ -928,9 +1301,9 @@ function recalcularPreciosPorFormaPago(){
     p.tieneOferta=datosPrecio.tieneOferta;
     p.oferta=datosPrecio.oferta;
 
-    if(String(p.unidad||"")==="Unidades"){
+    if(String(p.unidad||"")==="Unidades" || String(p.unidad||"")==="Flete"){
       p.precioCaja=precio;
-      p.subtotal=Number(p.cantidad||0)*precio;
+      p.subtotal=Number(p.cantidad||1)*precio;
     }else{
       p.precioCaja=precio*Number(p.cajaM2||0);
       p.subtotal=Number(p.m2Reales||0)*precio;
@@ -949,6 +1322,34 @@ function calcularActual(){
   const precioTarjeta=Number(productoActual["Precio Tarjeta"]||0);
   const precio=(forma==="Tarjeta"&&precioTarjeta>0)?precioTarjeta:(tieneOferta?oferta:Number(productoActual["Precio Contado"]||0));
 
+  const esENV = categoriaProducto(productoActual) === "ENV";
+
+  if(esENV){
+    const fechaEntrega = String($("fechaEntrega")?.value || "").trim();
+    if(!fechaEntrega){
+      $("calcInfo").textContent="Seleccioná una fecha de entrega.";
+      return null;
+    }
+    const subtotal=precio;
+    $("calcInfo").textContent=`1 flete · Subtotal: $ ${fmt(subtotal)}`;
+    return {
+      unidad:"Flete",
+      cantidad:1,
+      m2Solicitados:0,
+      conZocalo:false,
+      porcentajeAdicional:0,
+      m2Calculados:0,
+      cajas:0,
+      m2Reales:0,
+      precioM2:precio,
+      precioCaja:precio,
+      subtotal,
+      tieneOferta,
+      oferta,
+      fechaEntrega
+    };
+  }
+
   if(crrl){
     const cantidad=Number($("cantidad")?.value||0);
     if(cantidad<=0){$("calcInfo").textContent="";return null}
@@ -966,6 +1367,13 @@ function calcularActual(){
   return {unidad:"m²",cantidad:m2,m2Solicitados:m2,conZocalo:conZ,porcentajeAdicional:extra,m2Calculados:m2Calc,cajas,m2Reales:reales,precioM2:precio,precioCaja:precio*caja,subtotal,tieneOferta,oferta};
 }
 
+function formatearFechaCorta(fechaISO){
+  const s=String(fechaISO||"").trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const partes=s.split("-");
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
 function renderProductos(){
   if(!$("rows"))return;
 
@@ -976,10 +1384,13 @@ function renderProductos(){
     total+=Number(p.subtotal||0);
 
     const esCRRL = String(p.id||"").toUpperCase().startsWith("CRRL-");
+    const esENV = String(p.id||"").toUpperCase().startsWith("ENV-");
 
     let cantidadHTML="";
 
-    if(esCRRL){
+    if(esENV){
+      cantidadHTML=`<strong>1 flete</strong>${p.fechaEntrega ? `<br><small>Entrega: ${formatearFechaCorta(p.fechaEntrega)}</small>` : ""}`;
+    }else if(esCRRL){
 
       cantidadHTML=`
         <strong>${fmt0(p.cantidad||0)} unidades</strong>
@@ -1002,7 +1413,16 @@ function renderProductos(){
       `;
     }
 
-    const precioUnitario=Number(p.precioM2||0);
+    // En pastinas se muestra el precio de la caja, sin modificar
+    // el cálculo interno por m² ni el subtotal.
+    const idProducto = String(p.id||"").trim().toUpperCase();
+    const esPastina =
+      idProducto==="PSO-PTNA-1K" ||
+      idProducto==="PSO-PTNA-5K";
+
+    const precioUnitario = esPastina
+      ? Number(p.precioCaja||p.precioM2||0)
+      : Number(p.precioM2||0);
 
     const tr=document.createElement("tr");
 
@@ -1017,11 +1437,11 @@ function renderProductos(){
         }
       </td>
 
-      <td>${esc(p.medida||"—")}${p.unidadesPorCaja ? `<span class="quote-unidades-caja">${fmt0(p.unidadesPorCaja)} un./caja</span>` : ""}</td>
+      <td>${esENV ? "—" : `${esc(p.medida||"—")}${p.unidadesPorCaja ? `<span class="quote-unidades-caja">${fmt0(p.unidadesPorCaja)} un./caja</span>` : ""}`}</td>
 
       <td>${cantidadHTML}</td>
 
-      <td>${esCRRL ? "—" : p.cajas}</td>
+      <td>${esENV || esCRRL ? "—" : p.cajas}</td>
 
       <td class="money">$ ${fmt(precioUnitario)}</td>
 
@@ -1043,6 +1463,11 @@ function renderProductos(){
 $("cantidad")?.addEventListener("input",calcularActual);
 
 $("app").addEventListener("click",e=>{
+  const item=e.target.closest("[data-catalogo-index]");
+  if(item){
+    seleccionarProductoCatalogo(Number(item.dataset.catalogoIndex));
+    return;
+  }
   const btn=e.target.closest("[data-remove]");
   if(btn){
     productos.splice(Number(btn.dataset.remove),1);
@@ -1055,9 +1480,11 @@ $("app").addEventListener("click",e=>{
 
     if(!c){
       return alert(
-        esMaterialCorralon(productoActual)
-          ? "Ingresá la cantidad de unidades."
-          : "Ingresá los metros cuadrados."
+        categoriaProducto(productoActual)==="ENV"
+          ? "Seleccioná la fecha de entrega."
+          : (esMaterialCorralon(productoActual)
+              ? "Ingresá la cantidad de unidades."
+              : "Ingresá los metros cuadrados.")
       );
     }
 
@@ -1223,29 +1650,30 @@ const rows=d.productos.map(p=>{
 
   const idProducto=String(p.id||"").trim().toUpperCase();
 
-  const nombreProducto=String(p.producto||"").trim().toUpperCase();
-
   const esPastina=
     idProducto==="PSO-PTNA-1K" ||
-    idProducto==="PSO-PTNA-5K" ||
-    nombreProducto.includes("PASTINA");
-
-  // Para presupuestos históricos puede no existir el ID ni precioCaja.
-  // En ese caso, para pastinas tomamos el importe de la caja desde
-  // el subtotal y la cantidad de cajas registrada.
-  const precioCajaHistorico=
-    Number(p.precioCaja||0)>0
-      ? Number(p.precioCaja)
-      : (esPastina && Number(p.cajas||0)>0
-          ? Number(p.subtotal||0)/Number(p.cajas)
-          : 0);
+    idProducto==="PSO-PTNA-5K";
 
   const precioUnitarioMostrar=
     esPastina
-      ? (precioCajaHistorico>0 ? precioCajaHistorico : Number(p.precioM2||0))
+      ? Number(p.precioCaja||p.precioM2||0)
       : Number(p.precioM2||0);
 
-  return cr
+  const esENV = String(p.unidad||"").toUpperCase()==="FLETE" || String(p.id||"").toUpperCase().startsWith("ENV-");
+
+  return esENV
+    ? `<tr>
+        <td>
+          <strong>${esc(p.producto)}</strong>
+        </td>
+        <td>—</td>
+        <td>Flete</td>
+        <td>—</td>
+        <td class="money">$ ${fmt(precioUnitarioMostrar)}</td>
+        <td class="money">$ ${fmt(p.subtotal)}</td>
+      </tr>`
+
+    : cr
     ? `<tr>
         <td>
           <strong>${esc(p.producto)}</strong>
@@ -1266,7 +1694,7 @@ const rows=d.productos.map(p=>{
           ${p.tieneOferta?`<br><small>OFERTA</small>`:""}
         </td>
         <td>${esc(p.medida||"—")}${p.unidadesPorCaja ? `<span class="quote-unidades-caja">${fmt0(p.unidadesPorCaja)} un./caja</span>` : ""}</td>
-        <td>${fmt(p.m2Solicitados)}</td>
+        <td>${fmt(p.m2Solicitados)} m²</td>
         <td>${p.cajas}</td>
         <td class="money">$ ${fmt(precioUnitarioMostrar)}</td>
         <td class="money">$ ${fmt(p.subtotal)}</td>
@@ -1343,15 +1771,19 @@ const rows=d.productos.map(p=>{
       <div class="quote-section-line"></div>
       <div class="quote-section-title">Detalle del Presupuesto</div>
 
-      <div class="quote-table-scroll">
-        <table class="quote-table">
-          <thead>
-            <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
+      <table class="quote-table">
+        <thead>
+          <tr><th>Producto</th><th>Medida</th><th>Cantidad</th><th>Cajas</th><th>Precio Unit.</th><th>Importe</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
     </div>
+
+    ${d.productos.some(p => String(p.id||"").toUpperCase().startsWith("ENV-") || String(p.unidad||"").toUpperCase()==="FLETE")
+      ? `<div style="margin-top:3mm;font-size:3mm;line-height:1.45;color:#59666c">
+          <strong>Importante:</strong> La descarga se realizará en la puerta de acceso del domicilio, en un sector seguro y accesible para el vehículo. El servicio no contempla el ingreso del camión al interior de la propiedad.
+        </div>`
+      : ""}
 
     <div class="quote-total">
       <div>TOTAL</div>
@@ -1383,13 +1815,42 @@ async function cargarHistorico(numero){
     const r=await jsonp({accion:"presupuesto",numero,token});
     if(!r?.ok)throw new Error(r?.error||"No se pudo cargar el presupuesto.");
     const p=r.presupuesto;
-    const productosHistoricos=(r.productos||[]).map(x=>({
-      producto:x["Producto"]||"",color:x["Color"]||"",medida:x["Medida"]||"",
-      unidad:x["Unidad"]||"",cantidad:Number(x["Cantidad"]||0),
-      m2Solicitados:Number(x["m² solicitados"]||x["m² Solicitados"]||x["m2 Solicitados"]||0),
-      cajas:Number(x["Cajas"]||0),precioM2:Number(x["Precio/m²"]||0),subtotal:Number(x["Subtotal"]||0),
-      conZocalo:String(x["Con zócalo"]||"")==="Sí",tieneOferta:Number(x["Oferta"]||0)>0
-    }));
+    const productosHistoricos=(r.productos||[]).map(x=>{
+      const id=String(x["ID Producto"]||x["ID"]||"").trim();
+      const idUpper=id.toUpperCase();
+
+      // La cantidad que debe mostrarse en el presupuesto histórico
+      // es la CANTIDAD COMERCIAL guardada al momento de generar el presupuesto.
+      // "Cantidad" puede contener 0 para productos ENV/CRRL y no representa
+      // necesariamente la cantidad que se imprimió.
+      const cantidadComercialRaw=x["Cantidad comercial"];
+      const cantidadRaw=(cantidadComercialRaw!==undefined && cantidadComercialRaw!==null && String(cantidadComercialRaw).trim()!=="")
+        ? cantidadComercialRaw
+        : x["Cantidad"];
+
+      let unidad=String(x["Unidad"]||"").trim();
+
+      // Compatibilidad con presupuestos anteriores a las columnas nuevas.
+      if(!unidad && idUpper.startsWith("ENV-")) unidad="Flete";
+      if(!unidad && idUpper.startsWith("CRRL-")) unidad="Unidades";
+
+      return {
+        id,
+        producto:x["Producto"]||"",
+        color:x["Color"]||"",
+        medida:x["Medida"]||"",
+        unidad,
+        cantidad:Number(cantidadRaw||0),
+        fechaEntrega:x["Fecha entrega"]||"",
+        m2Solicitados:Number(x["m² solicitados"]||x["m² Solicitados"]||x["m2 Solicitados"]||0),
+        cajas:Number(x["Cajas"]||0),
+        precioM2:Number(x["Precio/m²"]||0),
+        precioCaja:Number(x["Precio/caja"]||0),
+        subtotal:Number(x["Subtotal"]||0),
+        conZocalo:String(x["Con zócalo"]||"")==="Sí",
+        tieneOferta:Number(x["Oferta"]||0)>0
+      };
+    });
     const datos={cliente:p["Cliente"]||"",dniCuit:p["DNI/CUIT"]||"",telefono:p["Teléfono"]||"",email:p["Email"]||"",direccion:p["Dirección"]||"",formaPago:p["Forma de pago"]||"",total:Number(p["Total"]||0),productos:productosHistoricos};
     const fecha=p["Fecha"]?new Date(p["Fecha"]).toLocaleDateString("es-AR"):new Date().toLocaleDateString("es-AR");
     $("app").innerHTML=header()+`<main class="wrap"><div class="historical-actions no-print"><button class="btn btn-primary" id="printQuote">🖨 IMPRIMIR / GUARDAR PDF</button><button class="btn btn-secondary" id="newQuote">NUEVO PRESUPUESTO</button></div>${quoteHtml(numero,fecha,datos)}</main>`;
@@ -1399,6 +1860,21 @@ async function cargarHistorico(numero){
     $("back").onclick=()=>{verNumero="";renderApp()};
   }
 }
+
+document.addEventListener("click",e=>{
+  const item=e.target.closest("[data-consulta-v7-index]");
+  if(item){
+    consultaV7Seleccionar(Number(item.dataset.consultaV7Index));
+    return;
+  }
+  if(e.target.id==="consultaV7Modal") cerrarConsultaCatalogo();
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && $("consultaV7Modal")?.classList.contains("open")){
+    cerrarConsultaCatalogo();
+  }
+});
 
 if(token) renderApp(); else mostrarLogin();
 </script>
