@@ -1615,40 +1615,58 @@ async function guardarPresupuesto(){
     // EL GUARDADO TODAVÍA NO SE MODIFICA.
     // ==================================================
 
-// MOSTRAR EL PRESUPUESTO INMEDIATAMENTE
-mostrarPresupuestoGuardado(numero, datos);
+// ==================================================
+// PASO 2 — GUARDAR PRESUPUESTO
+// ==================================================
+// Guardamos primero para que el servidor asigne y
+// conserve la Validez (días) correspondiente.
+// ==================================================
 
-// GUARDAR EN SEGUNDO PLANO
-jsonp({
+const rGuardado = await jsonp({
   accion: "guardar",
   token,
   numero: numero,
   datos: JSON.stringify(datos)
-})
-.then(rGuardado => {
-
-  if (!rGuardado?.ok) {
-    console.error(
-      "No se pudo guardar el presupuesto:",
-      rGuardado?.error || "Error desconocido"
-    );
-    return;
-  }
-
-  console.log(
-    "Presupuesto guardado correctamente:",
-    rGuardado.numero
-  );
-
-})
-.catch(error => {
-
-  console.error(
-    "Error al guardar el presupuesto:",
-    error
-  );
-
 });
+
+if(!rGuardado?.ok){
+  throw new Error(
+    rGuardado?.error ||
+    "No se pudo guardar el presupuesto."
+  );
+}
+
+// ==================================================
+// PASO 3 — RECUPERAR EL PRESUPUESTO GUARDADO
+// ==================================================
+// Se vuelve a consultar el presupuesto para obtener
+// la Validez (días) almacenada en Google Sheets.
+// Así el presupuesto nuevo no usa el valor por defecto
+// de 15 días del frontend.
+// ==================================================
+
+const rPresupuesto = await jsonp({
+  accion: "presupuesto",
+  numero,
+  token
+});
+
+if(!rPresupuesto?.ok){
+  throw new Error(
+    rPresupuesto?.error ||
+    "El presupuesto se guardó, pero no se pudo recuperar su validez."
+  );
+}
+
+const presupuestoGuardado = rPresupuesto.presupuesto || {};
+const validezGuardada = Number(
+  presupuestoGuardado["Validez (días)"] || 0
+);
+
+datos.validez = validezGuardada;
+
+// Mostrar el presupuesto con la validez guardada
+mostrarPresupuestoGuardado(numero, datos);
     
   }catch(e){
 
