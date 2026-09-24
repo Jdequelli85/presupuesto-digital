@@ -432,6 +432,7 @@ th{font-size:12px;text-transform:uppercase;color:#666;background:#fafafa}
 
 <div id="app"></div>
 
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby_3DebaIbZZW2qZ7ShkePBD40Bzo8wGyaHAw8w0omsKahF6CpuUEEPaG2ox3fGkAqk0w/exec";
 const LOGO_URL = "https://raw.githubusercontent.com/Jdequelli85/qr-corralon/main/logo.png";
@@ -453,6 +454,8 @@ let productos = [];
 let catalogoProductos = [];
 let catalogoOpciones = [];
 let productoActual = null;
+let scanner = null;
+let scanProcesando = false;
 let verNumero = new URLSearchParams(location.search).get("ver") || "";
 
 const $ = id => document.getElementById(id);
@@ -893,11 +896,10 @@ async function renderApp(){
   <div class="modal-backdrop" id="modal">
     <div class="modal modal-productos">
       <div class="modal-head"><h3>Agregar producto</h3><button class="close" id="close">×</button></div>
-      <div id="catalogArea">
-        <p class="scan-note">Seleccioná un producto del catálogo.</p>
-        <input id="buscarProducto" type="search" placeholder="🔎 Buscar por producto o medida..." autocomplete="off">
-        <div id="catalogoLista" class="catalogo-lista"></div>
-        <div id="catalogoError" class="status"></div>
+      <div id="scanArea">
+        <p class="scan-note">Escaneá el QR del producto con la cámara.</p>
+        <div id="reader"></div>
+        <div id="scanError" class="status"></div>
       </div>
       <div id="calcArea" hidden>
         <div id="productInfo" class="product-info"></div>
@@ -926,7 +928,6 @@ async function renderApp(){
   $("consultaV7Buscar").oninput=renderConsultaV7Catalogo;
   $("add").onclick=abrirModal;
   $("close").onclick=cerrarModal;
-  $("buscarProducto").oninput=renderCatalogo;
   $("cancel").onclick=()=>{if(confirm("¿Cancelar este presupuesto?")){productos=[];limpiarFormulario();renderProductos()}};
   $("generate").onclick=guardarPresupuesto;
   $("m2").oninput=calcularActual;
@@ -1059,64 +1060,80 @@ function mostrarConsultaV7Producto(p){
 }
 
 
-function abrirModal(){
-  productoActual = null;
+async function abrirModal(){
+  scanProcesando = false;
   $("modal").classList.add("open");
-  $("catalogArea").hidden=false;
+  $("scanArea").hidden=false;
   $("calcArea").hidden=true;
-  $("catalogoError").className="status";
-  $("catalogoError").textContent="";
-  $("buscarProducto").value="";
-  renderCatalogo();
-  setTimeout(()=>$("buscarProducto")?.focus(),50);
-}
+  $("scanError").className="status";
+  $("scanError").textContent="";
 
-function cerrarModal(){
-  $("modal")?.classList.remove("open");
-  productoActual=null;
-}
-
-function textoOpcionCatalogo(p){
-  const producto = String(p["Producto"] || "").trim();
-  const medida = String(p["Medida"] || "").trim();
-
-  if(categoriaProducto(p) === "CRRL"){
-    return producto;
-  }
-
-  return medida
-    ? `${producto} (${medida})`
-    : producto;
-}
-
-function renderCatalogo(){
-  const lista=$("catalogoLista");
-  if(!lista)return;
-  const q=String($("buscarProducto")?.value||"").trim().toLocaleLowerCase("es-AR");
-  const resultados=catalogoOpciones.filter(p=>{
-    if(!q)return true;
-    return textoOpcionCatalogo(p).toLocaleLowerCase("es-AR").includes(q);
-  });
-
-  if(!resultados.length){
-    lista.innerHTML='<div class="empty">No se encontraron productos.</div>';
+  if(typeof Html5Qrcode === "undefined"){
+    $("scanError").className="status error";
+    $("scanError").textContent="No se pudo cargar el lector QR. Recargá la página e intentá nuevamente.";
     return;
   }
 
-  lista.innerHTML=resultados.map((p,i)=>`
-    <button type="button" class="catalogo-item" data-catalogo-index="${catalogoOpciones.indexOf(p)}">
-      <strong>${esc(p["Producto"]||"")}</strong>
-      <span>${esc(p["Medida"] || "")}</span>
-    </button>`).join("");
+  if(scanner){
+    try{await scanner.stop();}catch(e){}
+    try{scanner.clear();}catch(e){}
+    scanner=null;
+  }
+
+  try{
+    scanner = new Html5Qrcode("reader");
+    await scanner.start(
+      {facingMode:"environment"},
+      {fps:10,qrbox:{width:250,height:250},aspectRatio:1},
+      onScan
+    );
+  }catch(e){
+    $("scanError").className="status error";
+    $("scanError").textContent="No se pudo abrir la cámara. Verificá el permiso del navegador.";
+  }
 }
 
-function seleccionarProductoCatalogo(indice){
-  const p=catalogoOpciones[indice];
-  if(!p)return;
-  productoActual={...p};
-  $("catalogArea").hidden=true;
-  $("calcArea").hidden=false;
-  mostrarProducto();
+async function cerrarModal(){
+  scanProcesando = false;
+  if(scanner){
+    try{await scanner.stop();}catch(e){}
+    try{scanner.clear();}catch(e){}
+    scanner=null;
+  }
+  $("modal")?.classList.remove("open");
+}
+
+async function onScan(text){
+  if(scanProcesando)return;
+
+  const id=extraerId(text);
+  if(!id)return;
+
+  scanProcesando = true;
+
+  if(scanner){try{await scanner.stop();}catch(e){}}
+  $("scanArea").hidden=true;
+
+  try{
+    const r=await jsonp({accion:"producto",id});
+    if(!r?.ok)throw new Error(r?.error||"Producto no encontrado.");
+
+    sonidoQR();
+    productoActual=r.producto;
+    mostrarProducto();
+  }catch(e){
+    $("scanArea").hidden=false;
+    $("scanError").className="status error";
+    $("scanError").textContent=e.message;
+    scanProcesando=false;
+    setTimeout(()=>abrirModal(),300);
+  }
+}
+
+function extraerId(text){
+  const t=String(text||"").trim();
+  const m=t.match(/[?&]id=([^&]+)/i);
+  return m?decodeURIComponent(m[1]):t;
 }
 
 function mostrarProducto(){
@@ -1824,9 +1841,13 @@ async function cargarHistorico(numero){
       // "Cantidad" puede contener 0 para productos ENV/CRRL y no representa
       // necesariamente la cantidad que se imprimió.
       const cantidadComercialRaw=x["Cantidad comercial"];
-      const cantidadRaw=(cantidadComercialRaw!==undefined && cantidadComercialRaw!==null && String(cantidadComercialRaw).trim()!=="")
+      const cantidadRawPrimaria=(cantidadComercialRaw!==undefined && cantidadComercialRaw!==null && String(cantidadComercialRaw).trim()!=="")
         ? cantidadComercialRaw
         : x["Cantidad"];
+
+      const subtotalHistorico=Number(x["Subtotal"]||0);
+      const precioM2Historico=Number(x["Precio/m²"]||0);
+      const precioCajaHistorico=Number(x["Precio/caja"]||0);
 
       let unidad=String(x["Unidad"]||"").trim();
 
@@ -1840,7 +1861,13 @@ async function cargarHistorico(numero){
         color:x["Color"]||"",
         medida:x["Medida"]||"",
         unidad,
-        cantidad:Number(cantidadRaw||0),
+        cantidad:(Number(cantidadRawPrimaria||0)>0
+          ? Number(cantidadRawPrimaria)
+          : ((idUpper.startsWith("CRRL-") && precioM2Historico>0)
+              ? subtotalHistorico/precioM2Historico
+              : ((idUpper.startsWith("CRRL-") && precioCajaHistorico>0)
+                  ? subtotalHistorico/precioCajaHistorico
+                  : 0))),
         fechaEntrega:x["Fecha entrega"]||"",
         m2Solicitados:Number(x["m² solicitados"]||x["m² Solicitados"]||x["m2 Solicitados"]||0),
         cajas:Number(x["Cajas"]||0),
